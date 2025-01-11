@@ -21,7 +21,35 @@ euro_pln <- read.csv("euro_pln.csv")[2:107, ]
 mci_pln <- read.csv("mci_pln.csv")[2:107, ]
 pkn_pln <- read.csv("pkn_pln.csv")[2:107, ]
 xau_pln <- read.csv("xau_pln.csv")[2:107, ]
+euro_pln$Data <- as.Date(euro_pln$Data, format = "%Y-%m-%d")
+mci_pln$Data <- as.Date(mci_pln$Data, format = "%Y-%m-%d")
+pkn_pln$Data <- as.Date(pkn_pln$Data, format = "%Y-%m-%d")
+xau_pln$Data <- as.Date(xau_pln$Data, format = "%Y-%m-%d")
+```
 
+
+## Wykresy cen wybranych aktywów
+```{r wykresy_cen, eval=TRUE, echo = FALSE, fig.height=8}
+w1 <- ggplot(euro_pln, aes(x = Data, y = Zamkniecie, group = 1)) +
+  geom_line() +
+  ggtitle("EUR/PLN") +
+  ylab("Cena zamknięcia w PLN")
+
+w2 <- ggplot(mci_pln, aes(x = Data, y = Zamkniecie, group = 1)) +
+  geom_line() +
+  ggtitle("MCI") +
+  ylab("Cena zamknięcia w PLN")
+  scale_y_continuous(labels = label_percent(scale = 1))
+w3 <- ggplot(pkn_pln, aes(x = Data, y = Zamkniecie, group = 1)) +
+  geom_line() +
+  ggtitle("PKN") +
+  ylab("Cena zamknięcia w PLN")
+w4 <- ggplot(xau_pln, aes(x = Data, y = Zamkniecie, group = 1)) +
+  geom_line() +
+  ggtitle("XAU/PLN") +
+  ylab("Cena zamknięcia w PLN")
+
+w1 / w2 / w3 / w4
 ```
 
 ## Wykresy pudełkowe
@@ -35,30 +63,34 @@ Poniższy wykres pudełkowy przedstawia rozkład zmiennej, ukazując jej central
 
 W skrócie, wykres pudełkowy dostarcza wizualnych informacji o rozkładzie zmiennej, umożliwiając identyfikację jej średniej, zakresu, rozproszenia oraz wartości odstających, a także ocenę symetrii lub asymetrii danych.
 
-```{r boxplot, eval=TRUE, echo = FALSE}
+```{r boxplot, eval=TRUE, echo = FALSE, fig.height=8}
 p1 <- ggplot(euro_pln, aes(x = '', y = pct_change)) +
   geom_boxplot() +
   coord_flip() +
   ggtitle("EUR/PLN") +
   ylab("") +
+  xlab("") +
   scale_y_continuous(labels = label_percent(scale = 1))
 p2 <- ggplot(mci_pln, aes(x = '', y = pct_change)) +
   geom_boxplot() +
   coord_flip() +
   ggtitle("MCI") +
   ylab("") +
+  xlab("") +
   scale_y_continuous(labels = label_percent(scale = 1))
 p3 <- ggplot(pkn_pln, aes(x = '', y = pct_change)) +
   geom_boxplot() +
   coord_flip() +
   ggtitle("PKN") +
   ylab("") +
+  xlab("") +
   scale_y_continuous(labels = label_percent(scale = 1))
 p4 <- ggplot(xau_pln, aes(x = '', y = pct_change)) +
   geom_boxplot() +
   coord_flip() +
   ggtitle("XAU/PLN") +
   ylab("") +
+  xlab("") +
   scale_y_continuous(labels = label_percent(scale = 1))
 
 p1 / p2 / p3 / p4
