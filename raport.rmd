@@ -24,9 +24,17 @@ xau_pln <- read.csv("xau_pln.csv")[2:107, ]
 
 ```
 
-# Statystyki opisowe
-
 ## Wykresy pudełkowe
+Poniższy wykres pudełkowy przedstawia rozkład zmiennej, ukazując jej centralną tendencję, rozproszenie oraz obecność wartości odstających. Na wykresie widać kilka kluczowych elementów:
+
+1. Pudełko (box), które reprezentuje zakres między 25. a 75. percentylem (Q1 i Q3), obrazując interkwartylowy zakres (IQR). Pudełko pokazuje, w jakim przedziale znajduje się połowa danych, wskazując na stopień koncentracji wartości wokół mediany.
+2. Linia wewnątrz pudełka (mediana), która wskazuje środek rozkładu, dzieląc dane na dwie równe części. Położenie mediany względem pudełka informuje o symetrii rozkładu danych.
+3. Wąsy (whiskers), które wychodzą z pudełka, pokazują zakres danych, znajdujących się w obrębie 1.5-krotności interkwartylowego zakresu (IQR) powyżej 75. percentyla i poniżej 25. percentyla. Wąsy wskazują na rozpiętość danych, nie obejmując wartości odstających.
+4. Wartości odstające (outliers), które są reprezentowane jako punkty znajdujące się poza zasięgiem wąsów. Te obserwacje są wyraźnie różniące się od reszty danych i wskazują na nietypowe lub ekstremalne wartości w zbiorze.
+5. Dodatkowo, na podstawie długości wąsów i położenia mediany, można ocenić asymetrię rozkładu. Jeśli wąsy są nierównej długości, rozkład jest przesunięty, co może sugerować obecność skośności. Wykres pudełkowy pozwala również na ocenę rozproszenia danych — szerokie pudełko wskazuje na większe zróżnicowanie, natomiast wąskie pudełko sugeruje mniejsze rozproszenie.
+
+W skrócie, wykres pudełkowy dostarcza wizualnych informacji o rozkładzie zmiennej, umożliwiając identyfikację jej średniej, zakresu, rozproszenia oraz wartości odstających, a także ocenę symetrii lub asymetrii danych.
+
 ```{r boxplot, eval=TRUE, echo = FALSE}
 p1 <- ggplot(euro_pln, aes(x = '', y = pct_change)) +
   geom_boxplot() +
@@ -57,6 +65,18 @@ p1 / p2 / p3 / p4
 ```
 
 ## Statystyki opisowe
+Tabela przedstawia statystyki opisowe dla czterech zmiennych: EUR/PLN (cena euro w złotówkach), MCI (MCI Capital ASI SA, polska Alternatywna Spółka Inwestycyjna), PKN (spółka PKN Orlen) oraz XAU/PLN (cena uncji złota w polskich złotych). Każda z tych zmiennych reprezentuje istotny składnik portfela inwestycyjnego, a ich analiza pozwala ocenić stabilność oraz zmienność poszczególnych aktywów.
+
+EUR/PLN: Średnia cena euro w złotówkach wynosi -0.002, co oznacza, że średnio w badanym okresie wartość euro względem złotówki lekko malała. Odchylenie standardowe na poziomie 0.256 wskazuje na umiarkowaną zmienność tej zmiennej. Mediana wynosząca 0.002 sugeruje, że cena euro była w miarę stabilna w centralnej części rozkładu, mimo że występowały okresowe wahania. Skośność wynosząca -0.202 wskazuje na lekką asymetrię w stronę niższych wartości. Kurtoza wynosząca 0.933 sugeruje, że rozkład tej zmiennej nie jest zbyt spiczasty, co wskazuje na brak dużych ekstremalnych zmian w cenie euro.
+
+MCI: Średnia zmiana wartości akcji MCI Capital ASI SA wynosi 0.019, co oznacza niewielki, ale dodatni trend w analizowanym okresie. Jednak odchylenie standardowe na poziomie 1.553 jest bardzo wysokie, co wskazuje na dużą zmienność tej spółki. Taka zmienność może być wynikiem specyfiki rynku alternatywnych inwestycji, które charakteryzują się większym ryzykiem. Mediana 0.000 oznacza, że w połowie okresu zmiany były neutralne. Skośność wynosząca 1.084 sugeruje, że rozkład jest przesunięty w stronę wyższych wartości, co może wskazywać na częstsze większe wzrosty niż spadki. Kurtoza na poziomie 4.842 potwierdza, że rozkład MCI ma ostry szczyt i często występują w nim duże zmiany, zarówno w górę, jak i w dół.
+
+PKN: Średnia zmiana ceny akcji PKN Orlen wynosi -0.190, co wskazuje na ogólny spadek w analizowanym okresie. Odchylenie standardowe na poziomie 1.620 wskazuje na dużą zmienność tego aktywa. PKN, będąc dużą spółką na rynku paliwowym, może być narażona na wahania związane z cenami surowców i sytuacją geopolityczną, co może tłumaczyć tę zmienność. Mediana wynosząca -0.358 sugeruje, że spółka miała tendencję do spadków w większej części okresu, mimo że w pewnych momentach występowały wzrosty. Skośność wynosząca 0.319 wskazuje na umiarkowaną asymetrię w stronę wyższych wartości, a kurtoza 0.526 sugeruje, że rozkład tej zmiennej nie jest szczególnie spiczasty, a wahania cen nie były ekstremalne.
+
+XAU/PLN: Średnia cena uncji złota wynosi 0.139, co oznacza, że w badanym okresie cena złota wzrastała. Złoto jest często traktowane jako aktywo bezpieczne, a jego cena może rosnąć w okresach niepewności rynkowej. Odchylenie standardowe 0.972 wskazuje na umiarkowaną zmienność, chociaż zmiany cen złota nie były tak duże jak w przypadku MCI czy PKN. Mediana wynosząca 0.196 sugeruje, że złoto miało tendencję wzrostową w większości okresu. Skośność wynosząca -0.884 wskazuje na pewną asymetrię rozkładu w stronę wyższych wartości, co może sugerować, że w analizowanym okresie cena złota miała skłonność do większych wzrostów. Kurtoza 2.777 wskazuje, że rozkład tej zmiennej jest bardziej spiczasty niż dla EUR/PLN czy PKN, co może sugerować większe skoki cenowe.
+
+Podsumowując, zmienność w portfelu inwestycyjnym jest różna w zależności od składnika. Aktywa takie jak MCI i PKN charakteryzują się wysoką zmiennością, co może wiązać się z większym ryzykiem, ale także większym potencjałem zysków. Z kolei EUR/PLN i XAU/PLN wydają się być bardziej stabilne, z mniejszymi wahaniami, co może sugerować niższe ryzyko związane z tymi składnikami portfela. Zmienność MCI i PKN może być szczególnie istotna dla inwestorów poszukujących bardziej dynamicznych aktywów, podczas gdy EUR/PLN i XAU/PLN mogą pełnić rolę stabilizującą portfel.
+
 ```{r stat_desc, eval=TRUE, echo = FALSE}
 euro_pln_stat <- describe(euro_pln[, c("pct_change")])
 mci_pln_stat <- describe(mci_pln[, c("pct_change")])
@@ -86,12 +106,7 @@ rownames(combined_stats) <- translation[rownames(combined_stats)]
 # combined_stats
 kable(combined_stats, digits = 3)
 ```
-Tabela przedstawia statystyki opisowe dla czterech zmiennych: EUR/PLN, MCI, PKN oraz XAU/PLN. Wśród miar centralnych, średnia dla EUR/PLN wynosi -0.002, dla MCI 0.019, dla PKN -0.190, a dla XAU/PLN 0.139. Mediana zmiennych to odpowiednio: 0.002 dla EUR/PLN, 0.000 dla MCI, -0.358 dla PKN oraz 0.196 dla XAU/PLN. Średnia przycięta, po usunięciu ekstremalnych wartości, wynosi 0.000 dla EUR/PLN, -0.020 dla MCI, -0.226 dla PKN oraz 0.189 dla XAU/PLN.
-W zakresie rozproszenia, odchylenie standardowe dla EUR/PLN wynosi 0.256, dla MCI 1.553, dla PKN 1.620, a dla XAU/PLN 0.972. Mediana bezwzględnego odchylenia, która pokazuje przeciętne odchylenie od mediany, wynosi odpowiednio 0.231 dla EUR/PLN, 1.177 dla MCI, 1.495 dla PKN oraz 0.896 dla XAU/PLN.
-Zakres wartości w danych, czyli różnica między maksimum a minimum, wynosi 1.595 dla EUR/PLN, 11.163 dla MCI, 9.075 dla PKN oraz 6.784 dla XAU/PLN. Najniższe wartości (minimum) dla zmiennych to: -0.915 dla EUR/PLN, -3.371 dla MCI, -4.202 dla PKN oraz -4.275 dla XAU/PLN. Najwyższe wartości (maksimum) to: 0.679 dla EUR/PLN, 7.792 dla MCI, 4.873 dla PKN oraz 2.509 dla XAU/PLN.
-Miary skośności pokazują asymetrię rozkładu danych: dla EUR/PLN skośność wynosi -0.202, dla MCI 1.084, dla PKN 0.319, a dla XAU/PLN -0.884. Skośność bliska zeru oznacza, że dane są względnie symetryczne, podczas gdy wartości dodatnie i ujemne wskazują na asymetrię rozkładu. Z kolei kurtoza, która mierzy "spiczastość" rozkładu, wynosi 0.933 dla EUR/PLN, 4.842 dla MCI, 0.526 dla PKN oraz 2.777 dla XAU/PLN. Wysoka kurtoza dla MCI sugeruje, że rozkład danych ma wysoki i ostry szczyt.
-Błąd standardowy, który wskazuje na precyzję estymacji średniej, wynosi 0.025 dla EUR/PLN, 0.151 dla MCI, 0.157 dla PKN oraz 0.094 dla XAU/PLN, co odzwierciedla stopień niepewności w oszacowaniu średniej dla poszczególnych zmiennych.
-Podsumowując, tabela dostarcza istotnych informacji o rozkładzie, zmienności oraz precyzji danych, umożliwiając dokładniejszą analizę i wnioskowanie na temat badanych zmiennych.
+
 
 
 
