@@ -16,6 +16,9 @@ library(scales)
 library(patchwork)
 library(kableExtra)
 library(grid)
+library(tidyverse)
+library(quadprog)
+library(PerformanceAnalytics)
 
 # euro_pln, mci_pln, pkn_pln, xau_pln
 euro_pln <- read.csv("euro_pln.csv")[2:107, ]
@@ -28,7 +31,7 @@ pkn_pln$Data <- as.Date(pkn_pln$Data, format = "%Y-%m-%d")
 xau_pln$Data <- as.Date(xau_pln$Data, format = "%Y-%m-%d")
 ```
 
-# Statystyki opisowe
+## Statystyki opisowe
 
 Przy wykonywaniu statystyk opisowych dla stóp zwrotu wybór między zmianą procentową a logarytmiczną stopą zwrotu zależy od celu analizy oraz właściwości danych. Oba wskaźniki mają swoje zalety i są stosowane w różnych kontekstach.
 
@@ -80,7 +83,7 @@ grid.draw(
 ```
 
 ### Wykresy pudełkowe
-Poniższy wykres pudełkowy przedstawia rozkład zmiennej, ukazując jej centralną tendencję, rozproszenie oraz obecność wartości odstających. Na wykresie widać kilka kluczowych elementów:
+Poniższe wykresy pudełkowe przedstawiają rozkład zmiennych, ukazując ich centralną tendencję, rozproszenie oraz obecność wartości odstających. Na wykresie widać kilka kluczowych elementów opisanych poniżej. Dla łatwiejszej interpretacji wykresy zostały jednolicie wyskalowane aby ułatwić porównanie między aktywami.
 
 1. Pudełko, które reprezentuje zakres między 25. a 75. percentylem (Q1 i Q3), obrazując zakres interkwartylowy. Wykres ten pokazuje, w jakim przedziale znajduje się połowa danych, wskazując na stopień koncentracji wartości wokół mediany. Szczególnie w przypadku cen euro, pudełko jest wąskie, co sugeruje mniejsze rozproszenie cen w analizowanym okresie.
 2. Linia wewnątrz pudełka wskazuje środek rozkładu, dzieląc dane na dwie równe części. Położenie mediany względem pudełka informuje o symetrii rozkładu danych. W analizowanych danych mediana jest zazwyczaj blisko środka pudełka, co sugeruje symetryczny rozkład. Jedynym zauważalnym wyjątkiem jest PKN, gdzie mediana jest przesunięta w stronę niższych wartości, co sugeruje asymetrię w kierunku spadków.
@@ -95,29 +98,25 @@ p1 <- ggplot(euro_pln, aes(x = '', y = pct_change)) +
   geom_boxplot() +
   coord_flip() +
   ggtitle("EUR/PLN") +
-  ylab("") +
-  xlab("") +
+  theme(axis.title.y = element_blank(), axis.title.x = element_blank()) +
   scale_y_continuous(labels = label_percent(scale = 1), limits = c(-5, 10))
 p2 <- ggplot(mci_pln, aes(x = '', y = pct_change)) +
   geom_boxplot() +
   coord_flip() +
   ggtitle("MCI") +
-  ylab("") +
-  xlab("") +
+  theme(axis.title.y = element_blank(), axis.title.x = element_blank()) +
   scale_y_continuous(labels = label_percent(scale = 1), limits = c(-5, 10))
 p3 <- ggplot(pkn_pln, aes(x = '', y = pct_change)) +
   geom_boxplot() +
   coord_flip() +
   ggtitle("PKN") +
-  ylab("") +
-  xlab("") +
+  theme(axis.title.y = element_blank(), axis.title.x = element_blank()) +
   scale_y_continuous(labels = label_percent(scale = 1), limits = c(-5, 10))
 p4 <- ggplot(xau_pln, aes(x = '', y = pct_change)) +
   geom_boxplot() +
   coord_flip() +
   ggtitle("XAU/PLN") +
-  ylab("") +
-  xlab("") +
+  theme(axis.title.y = element_blank(), axis.title.x = element_blank()) +
   scale_y_continuous(labels = label_percent(scale = 1), limits = c(-5, 10))
 
 p1 / p2 / p3 / p4
@@ -165,7 +164,83 @@ XAU/PLN: Średnia cena uncji złota wynosi 0.139, co oznacza, że w badanym okre
 
 Podsumowując, zmienność w portfelu inwestycyjnym jest różna w zależności od składnika. Aktywa takie jak MCI i PKN charakteryzują się wysoką zmiennością, co może wiązać się z większym ryzykiem, ale także większym potencjałem zysków. Z kolei EUR/PLN i XAU/PLN wydają się być bardziej stabilne, z mniejszymi wahaniami, co może sugerować niższe ryzyko związane z tymi składnikami portfela. Zmienność MCI i PKN może być szczególnie istotna dla inwestorów poszukujących bardziej dynamicznych aktywów, podczas gdy EUR/PLN i XAU/PLN mogą pełnić rolę stabilizującą portfel.
 
+## Portfel o minimalnym ryzyku
+
+W analizie portfela o minimalnym ryzyku wykorzystano dane dotyczące czterech aktywów: EUR/PLN, MCI, PKN oraz XAU/PLN. Celem analizy jest znalezienie takich proporcji inwestycji w poszczególne aktywa, które zapewnią najniższe ryzyko portfela mierzone jako. Dążymy tutaj do minimalizację ryzyka bez względu na stopę zwrotu. 
+
+Portfel ten cechuje się bardzo ciekawą zależnością - całkowicie wyklucza z złoto, a środki ulokowane zostały głównie w euro. Logarytmiczna stopa zwrotu z badanego okresu wynosiła -0.004, co oznacza, że portfel ten był stabilny, ale nie przyniósł rzadnych zysków. Ryzyko tego portfela mierzone jako wariancja stop zwrotu wynosiło 0.2396515. Współczynnik Sharpe'a wynosił -0.02, co oznacza, że portfel ten był nieefektywny, ponieważ nie przyniósł zysków w stosunku do ryzyka. Ujemne Sharpe ratio oznacza, że zwrot z portfela jest mniejszy niż stopa zwrotu z aktywów bez ryzyka, czyli inwestycja nie rekompensuje podjętego ryzyka. 
+
+W poprzednim rozdziale wyznaczono wykresy pudełkowe dla zmiennych i inwestycja największej ilości środków w euro ma sens biorąc pod uwagę minimalną zmienność kursu tej waluty w wybranym okresie. 
+
+```{r min_risk_portfolio, eval=TRUE, echo = FALSE}
+returns <- tibble(
+  EURPLN = euro_pln$log_return,
+  MCI = mci_pln$log_return,
+  PKN = pkn_pln$log_return,
+  XAU = xau_pln$log_return
+)
+
+# Calculate mean returns and covariance matrix
+mean_returns <- colMeans(returns)
+cov_matrix <- var(returns)
+# Set up quadratic programming for minimum risk portfolio
+n <- ncol(returns)
+Dmat <- 2 * cov_matrix
+dvec <- rep(0, n)
+Amat <- cbind(rep(1, n), diag(n)) # Constraints: sum of 0 <= weights = 1
+bvec <- c(1, rep(0, n))    # RHS for constraints
+
+# Solve for weights of the minimum risk portfolio
+result <- solve.QP(Dmat, dvec, Amat, bvec, meq = 1)
+min_risk_weights <- result$solution * 100
+
+# Calculate metrics
+min_risk_return <- sum(min_risk_weights * mean_returns)  # Expected return
+min_risk_volatility <- sqrt(
+  t(min_risk_weights) %*% cov_matrix %*% min_risk_weights
+)  # Risk
+sharpe_ratio <- min_risk_return / min_risk_volatility  # Efficiency
+
+# Print results
+# cat("Weights of Minimum Risk Portfolio:\n")
+# print(min_risk_weights)
+# print(sum(min_risk_weights))
+# cat("\nExpected Return of Minimum Risk Portfolio: ", min_risk_return, "\n")
+# cat("Risk (Volatility) of Minimum Risk Portfolio: ", min_risk_volatility, "\n")
+# cat("Sharpe Ratio of Minimum Risk Portfolio: ", sharpe_ratio, "\n")
 
 
+pie_chart <- data.frame(
+  category = c("EUR/PLN", "MCI", "PKN", "XAU/PLN"),
+  value = min_risk_weights
+)
 
+pie_chart$legend_label <- paste0(
+  pie_chart$category,
+  " - ",
+  round(pie_chart$value, 1),
+  " %"
+)
 
+# Create the pie chart
+ggplot(pie_chart, aes(x = "", y = value, fill = category)) +
+  geom_bar(stat = "identity", width = 1, , color = "white") +
+  coord_polar(theta = "y") +
+  theme(plot.title = element_blank()) +
+  theme_void() +
+  scale_fill_manual(
+    values = c(
+      "EUR/PLN" = "#fc8686",
+      "MCI" = "#8484ff",
+      "PKN" = "#80ff80",
+      "XAU/PLN" = "#ffd586"
+    ),
+    labels = pie_chart$legend_label
+  )
+```
+
+## Portfel z uwzględnieniem sprzedaży krótkiej
+
+```{r short_selling, eval = TRUE, echo = FALSE}
+  
+```
