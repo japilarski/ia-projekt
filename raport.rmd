@@ -2,7 +2,11 @@
 title: ""
 author: ""
 date: "`r Sys.Date()`"
-output: html_document
+output: 
+  html_document:
+    toc: true
+    theme: paper
+theme: paper
 ---
 
 ```{r setup, include=FALSE}
@@ -182,7 +186,7 @@ Portfel ten cechuje się bardzo ciekawą zależnością - całkowicie wyklucza 
 
 W poprzednim rozdziale wyznaczono wykresy pudełkowe dla zmiennych i inwestycja największej ilości środków w euro ma sens biorąc pod uwagę minimalną zmienność kursu tej waluty w wybranym okresie. 
 
-```{r min_risk_portfolio, eval=TRUE, echo = FALSE}
+```{r min_risk_portfolio, eval=TRUE, echo = FALSE, fig.align='center'}
 returns <- tibble(
   EURPLN = euro_pln$log_return,
   MCI = mci_pln$log_return,
@@ -253,7 +257,7 @@ ggplot(pie_chart, aes(x = "", y = value, fill = category)) +
 
 Przedstawia wszystkie możliwości kombinacji portfela inwestycyjnego z poszczególnych ryzykownych aktywów. Na wykresie widoczna jest oś X, na której znajduje się ryzyko oraz oczekiwaną stopę zwrotu na osi Y. Postać graficzna pozwala na identyfikację optymalnych portfeli, w tym między innymi portfela o minimalnym ryzyku oraz portfela o maksymalnej efektywności. Niebieski obszar reprezentuje wszystkie możliwości kombinacji portfeli utworzonych z dostępnych aktywów ryzykownych, każdy zaznaczony punkt odpowiada innemu portfelowi. Zielony punkt wskazuje na portfel minimalnego ryzyka, o najniższym poziomie odchylenia standardowego w całym dostępnym zbiorze. Czerwona kropka przedstawia portfel o maksymalnej efektywności, który oferuje najwyższą oczekiwaną stopę zwrotu w stosunku do ryzyka. Czarne punkty na wykresie oznaczają portfele jednoelementowe, które składają się w 100% z jednego poszczególnego aktywa. Dodatkowo na wykresie znajduje się fioletowa krzywa, która reprezentuje granicę efektywną, czyli zbiór portfeli, które są optymalne i oferują najwyższą oczekiwaną stopę zwrotu dla określonego poziomu ryzyka.
 
-```{r echo=FALSE}
+```{r echo=FALSE, fig.align='center'}
 #importing data
 ror <- read.csv("ror.csv", sep=";", dec=",")
 #We choose three assets for further analysis 
