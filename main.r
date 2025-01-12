@@ -75,7 +75,7 @@ combined_df <- rbind(df1, df2, df3, df4)
 # Symmetry	Not symmetric for gains and losses.	Symmetric for gains and losses.
 # Use in Statistical Models	May violate assumptions of normality.	Log returns often approximate a normal distribution better.
 
-#Which to Use for Descriptive Statistics?
+# Which to Use for Descriptive Statistics?
 # 1. If Interpretability is Important (e.g., Communicating Results):
 # Use percentage changes because they are intuitive and easy to explain.
 # 2. If Analyzing Statistical Properties (e.g., Volatility, Risk Models):
