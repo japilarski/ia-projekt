@@ -31,6 +31,16 @@ pkn_pln$Data <- as.Date(pkn_pln$Data, format = "%Y-%m-%d")
 xau_pln$Data <- as.Date(xau_pln$Data, format = "%Y-%m-%d")
 ```
 
+## Wstęp
+
+Przeprowadzona analiza dotyczy portfela inwestycyjnego złożonego z 3 inwestycji alternatywnych z trzech różnych kategorii między innymi metale szlachetne, waluty, fundusze oraz akcje polskiego przedsiębuorstwa wchodzącego w skład indeksu WIG30. Wybrane aktywa do portfelu inwestycyjnego to złoto, euro, fundusz MCI oraz aktywa PKN Orlen. Do przeprowadzonej analizy wykorzystano ceny zamknięcia w interwale dziennym zaczynając od 1 lipca 2024 do 29 listopada 2024. Celem analizy jest przeprowadzenie badania portfela inwestycyjnego w oparciu o miary statystyczne, efektywnościowe oraz miary ryzyka.
+
+## Charakterystyka inwestycji
+
+### **MCI Capital ASI SA** - fundusz inwestycyjny
+
+Jest polska Alternatywna Spółka Inwestycyjna (ASI), czyli fundusz, który oferuje inwestorom alternatywne opcje inwestycyjne, które charakteryzują się wyższym ryzykiem, ale mogą przynieść atrakcyjniejsze zwroty, które nie są dostępne w ramach tradycyjnych funduszy inwestycyjnych. Specjalizuje się w inwestycjach związanych z cyfrową transformacją gospodarki oraz innowacyjnymi modelami biznesowymi. Aktualne portfolio funduszu obejmuje 14 aktywnych inwestycji w takich obszarach jak e-commerce, fintech, SaaS, cloud gaming, rynki internetowe oraz technologie związane z zieloną transformacją i klimatem (climatech). Fundusz koncentruje się na wspieraniu firm, które wprowadzają innowacyjne rozwiązania w swoich branżach, a także na wspieraniu rozwoju infrastruktury internetowej.
+
 ## Statystyki opisowe
 
 Przy wykonywaniu statystyk opisowych dla stóp zwrotu wybór między zmianą procentową a logarytmiczną stopą zwrotu zależy od celu analizy oraz właściwości danych. Oba wskaźniki mają swoje zalety i są stosowane w różnych kontekstach.
@@ -239,8 +249,133 @@ ggplot(pie_chart, aes(x = "", y = value, fill = category)) +
   )
 ```
 
-## Portfel z uwzględnieniem sprzedaży krótkiej
+## Zbiór możliwości inwestycyjnych
+
+Przedstawia wszystkie możliwości kombinacji portfela inwestycyjnego z poszczególnych ryzykownych aktywów. Na wykresie widoczna jest oś X, na której znajduje się ryzyko oraz oczekiwaną stopę zwrotu na osi Y. Postać graficzna pozwala na identyfikację optymalnych portfeli, w tym między innymi portfela o minimalnym ryzyku oraz portfela o maksymalnej efektywności. Niebieski obszar reprezentuje wszystkie możliwości kombinacji portfeli utworzonych z dostępnych aktywów ryzykownych, każdy zaznaczony punkt odpowiada innemu portfelowi. Zielony punkt wskazuje na portfel minimalnego ryzyka, o najniższym poziomie odchylenia standardowego w całym dostępnym zbiorze. Czerwona kropka przedstawia portfel o maksymalnej efektywności, który oferuje najwyższą oczekiwaną stopę zwrotu w stosunku do ryzyka. Czarne punkty na wykresie oznaczają portfele jednoelementowe, które składają się w 100% z jednego poszczególnego aktywa. Dodatkowo na wykresie znajduje się fioletowa krzywa, która reprezentuje granicę efektywną, czyli zbiór portfeli, które są optymalne i oferują najwyższą oczekiwaną stopę zwrotu dla określonego poziomu ryzyka.
+
+```{r echo=FALSE}
+#importing data
+ror <- read.csv("ror.csv", sep=";", dec=",")
+#We choose three assets for further analysis 
+portfolio4 <- ror[c(1, 2, 3, 4)]
+#Variables for all calculations
+gold <- portfolio4$gold
+orlen <- portfolio4$orlen
+fund <- portfolio4$fund
+eur <- portfolio4$eur
+#importing weights from file txt
+weights4inv <- read.table("weights4inv.txt",dec=".", header=TRUE, quote="\"",stringsAsFactors=FALSE)
+w1 <- weights4inv$W1
+w1 <- as.numeric(w1)
+w2 <- weights4inv$W2
+w2 <- as.numeric(w2)
+w3 <- weights4inv$W3
+w3 <- as.numeric(w3)
+w4 <- weights4inv$W4
+w4 <- as.numeric(w4)
+#calculating SD
+s1 <- sd(gold)
+s2 <- sd(orlen)
+s3 <- sd(fund)
+s4 <- sd(eur)
+#Calculating corellation
+corr12 <- cor(gold,orlen)
+corr13 <- cor(gold,fund)
+corr14 <- cor(gold, eur)
+corr23 <- cor(orlen, fund)
+corr24 <- cor(orlen, eur)
+corr34 <- cor(fund, eur)
+#calculating ip
+iportfolio <- mean(gold)*w1+mean(orlen)*w2+mean(fund)*w3+mean(eur)*w4
+#portfolio risk
+sdp <- (w1^2*s1^2 + w2^2*s2^2 + w3^2*s3^2 + w4^2*s4^2 + 2*w1*w2*s1*s2*corr12 + 2*w1*w3*s1*s3*corr13 + 2*w1*w4*s1*s4*corr14 + 
+          2*w2*w3*s2*s3*corr23 + 2*w2*w4*s2*s4*corr24 + 2*w3*w4*s3*s4*corr34)^0.5
+#calculating effectivness
+rf <- 0
+sharp <- (iportfolio-rf)/sdp
+#preparing df with results
+data <- cbind(w1, w2, w3, w4, iportfolio, sdp, sharp)
+data <- as.data.frame(data)
+#finding interesting portfolios
+min.risk <- subset(data, data$sdp==min(data$sdp))
+max.effectivness <- subset(data, data$sharp==max(data$sharp))
+max.ip <- subset(data, data$iportfolio==max(data$iportfolio))
+max.w1 <- subset(data, data$w1==1)
+max.w2 <- subset(data, data$w2==1)
+max.w3 <- subset(data, data$w3==1)
+max.w4 <- subset(data, data$w4==1)
+des <- c("Minimal risk portfolio", "Maximum efficiency portfolio", "Maximum rate of return portfolio", "Max weight one portfolio", "Max weight two portfolio", "Max weight three portfolio", "Max weight four portfolio")
+#Creating table with results 3 portfolios and showing results in console
+results <- cbind(rbind(min.risk, max.effectivness, max.ip, max.w1, max.w2, max.w3, max.w4), des)
+write.csv(x=results, file = "results.csv", row.names=FALSE)
+
+plot(sdp, iportfolio, type= "p", col = "#98B6D5")
+xlim = c(0, 0.02)
+title(main="Opportunity set for four risky assets without SS")
+points(min.risk$sdp, min.risk$iportfolio, pch=19, col="#4FC46A", cex = 2.5)
+points(max.effectivness$sdp, max.effectivness$iportfolio, pch=16, col="#C81518", cex = 2.5)
+points(max.ip$sdp, max.ip$iportfolio, pch=19, col="yellow", cex = 1)
+points(max.w1$sdp, max.w1$iportfolio, pch=19, col="black")
+points(max.w2$sdp, max.w2$iportfolio, pch=19, col="black")
+points(max.w3$sdp, max.w3$iportfolio, pch=19, col="black")
+points(max.w4$sdp, max.w4$iportfolio, pch=19, col="black")
+grid(col = "gray", lty = "dotted")
+       
+sorted <- data.frame(sdp = sdp, iportfolio = iportfolio)
+sorted <- sorted[order(sorted$sdp), ]
+efficient_frontier <- sorted[sorted$iportfolio == cummax(sorted$iportfolio), ]
+
+# Rysowanie granicy efektywnej
+lines(efficient_frontier$sdp, efficient_frontier$iportfolio, col = "#A61B96", lwd = 3)
+
+```
+
+## Portfel o maksymalnym zysku z uwzględnieniem sprzedaży krótkiej
+
+Uzyskanie portfela zapewniającego maksymalny zysk z uwzględnieniem krótkiej sprzedaży daje bardzo ciekawe efekty. Jako że Orlen w całym badanym okresie był w tendencji spadkowej i stracił na wartości akcji ponad 10 złotych, czyli około 20%. Komponując portfel bazując na krótkiej sprzedaży spółki orlen, uzyskujemy w sumie skumulowaną wartość stopy logarytmicznej na poziomie 0.21. Ryzyko tego porfela wyrażone odchyleniem standardowym wynosi 0.016. Współczynnik Sharpe'a wynosił 13.2832, co oznacza, że portfel ten był bardzo efektywny - przyniósł wysokie zyski w stosunku do ryzyka. Oczywiście takie wyniki są bardzo trudne do osiągnięcia w praktyce, ale pokazują, że krótka sprzedaż może być skuteczną strategią inwestycyjną w określonych warunkach rynkowych.
 
 ```{r short_selling, eval = TRUE, echo = FALSE}
-  
+returns <- tibble(
+  EURPLN = euro_pln$log_return,
+  MCI = mci_pln$log_return,
+  PKN = pkn_pln$log_return,
+  XAU = xau_pln$log_return
+)
+
+cov_matrix <- cov(returns)
+mean_returns <- colMeans(returns)
+
+Dmat <- cov_matrix  # Covariance matrix, represents risk
+dvec <- -mean_returns    # Negative of expected returns (since we are maximizing the return)
+Amat <- cbind(1, diag(1, nrow = length(returns)))  # Constraint matrix, sum(w) = 1 and short selling (w >= -1)
+bvec <- c(1, rep(0, length(returns)))  # Constraints: sum(w) = 1, w >= -1 for short selling
+
+# Solve the quadratic programming problem
+solution <- solve.QP(Dmat, dvec, Amat, bvec, meq = 1)
+
+optimal_weights <- round(solution$solution, 2)
+# optimal_weights
+return_rate <- -sum(optimal_weights * t(returns))
+# return_rate
+percent_return <- (exp(return_rate) - 1) * 100
+# percent_return
+# 2. Calculate the portfolio risk (standard deviation)
+portfolio_variance <- t(optimal_weights) %*% cov_matrix %*% optimal_weights
+portfolio_risk <- sqrt(portfolio_variance)
+
+# 3. Calculate the Sharpe Ratio (assuming a risk-free rate of 0 for simplicity)
+sharpe_ratio <- return_rate / portfolio_risk
+
+# Print the results
+# cat("Expected Return Rate: ", return_rate, "\n")
+# cat("Portfolio Risk (Standard Deviation): ", portfolio_risk, "\n")
+# cat("Sharpe Ratio: ", sharpe_ratio, "\n")
+
+# cat(sum(pkn_pln$log_return))
 ```
+
+## Bibliografia
+
+1.  Urząd Komisji Nadzoru Finansowego. “KNF.” *Knf.gov.pl*, 2024, [www.knf.gov.pl/dla_rynku/procesy_licencyjne/kapitalowy/zarzadzajacy_alternatywnymi_spolkami_inwestycyjnymi_ZASI/pytania_i_odpowiedzi. Accessed 8 Jan. 2025](http://www.knf.gov.pl/dla_rynku/procesy_licencyjne/kapitalowy/zarzadzajacy_alternatywnymi_spolkami_inwestycyjnymi_ZASI/pytania_i_odpowiedzi.%20Accessed%208%20Jan.%202025).
+2.  “Opportunity Set Definition and Tutorial for Investment Modeling \| FactorPad.” *Factorpad.com*, factorpad.com/fin/glossary/opportunity-set.html.
+3.  “MCI - MCI Capital ASI SA - Stooq.” *Stooq*, 2025, stooq.pl/q/p/?s=mci&fbclid=IwZXh0bgNhZW0CMTEAAR1EYBwR60o75nUTSQ3b-95iZ-nU2zflpBnvTctKiazgGsZhliUjWwLx0n0_aem_Nennkxm8HU8jLqFlHg0vJA. Accessed 8 Jan. 2025.
