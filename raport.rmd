@@ -45,6 +45,12 @@ Przeprowadzona analiza dotyczy portfela inwestycyjnego złożonego z 3 inwestycj
 
 Jest polska Alternatywna Spółka Inwestycyjna (ASI), czyli fundusz, który oferuje inwestorom alternatywne opcje inwestycyjne, które charakteryzują się wyższym ryzykiem, ale mogą przynieść atrakcyjniejsze zwroty, które nie są dostępne w ramach tradycyjnych funduszy inwestycyjnych. Specjalizuje się w inwestycjach związanych z cyfrową transformacją gospodarki oraz innowacyjnymi modelami biznesowymi. Aktualne portfolio funduszu obejmuje 14 aktywnych inwestycji w takich obszarach jak e-commerce, fintech, SaaS, cloud gaming, rynki internetowe oraz technologie związane z zieloną transformacją i klimatem (climatech). Fundusz koncentruje się na wspieraniu firm, które wprowadzają innowacyjne rozwiązania w swoich branżach, a także na wspieraniu rozwoju infrastruktury internetowej.
 
+### **PKN ORLEN SA
+
+PKN ORLEN SA to polski koncern multienergetyczny, który działa w sektorze naftowym, gazowym, petrochemicznym oraz energii odnawialnej. Jest jednym z największych przedsiębiorstw w Europie Środkowo-Wschodniej, notowanym na Giełdzie Papierów Wartościowych w Warszawie.
+PKN ORLEN posiada rozwiniętą sieć stacji paliwowych w Polsce oraz w regionie Europy Środkowo-Wschodniej, oferując szeroką gamę produktów i usług, w tym programy lojalnościowe oraz rozwiązania z zakresu elektromobilności. Portfolio spółki obejmuje również zaawansowane technologie petrochemiczne oraz produkty chemiczne, które znajdują zastosowanie w wielu branżach przemysłowych.
+ORLEN jest liderem w branży energetycznej w Polsce, a jego strategiczne inwestycje przyczyniają się do zwiększenia bezpieczeństwa energetycznego kraju oraz wsparcia transformacji w kierunku gospodarki niskoemisyjnej.
+
 ## Statystyki opisowe
 
 Przy wykonywaniu statystyk opisowych dla stóp zwrotu wybór między zmianą procentową a logarytmiczną stopą zwrotu zależy od celu analizy oraz właściwości danych. Oba wskaźniki mają swoje zalety i są stosowane w różnych kontekstach.
