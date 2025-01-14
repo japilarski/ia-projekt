@@ -260,6 +260,144 @@ ggplot(pie_chart, aes(x = "", y = value, fill = category)) +
   )
 ```
 
+## Portfel z maksymalną efektywnością
+
+```{r max_eff_portfolio, eval=TRUE, echo = FALSE, fig.align='center'}
+#importing data
+ror <- read.csv("ror.csv", sep=";", dec=",")
+#We choose three assets for further analysis 
+portfolio4 <- ror[c(1, 2, 3, 4)]
+#Variables for all calculations
+gold <- portfolio4$gold
+orlen <- portfolio4$orlen
+fund <- portfolio4$fund
+eur <- portfolio4$eur
+#importing weights from file txt
+weights4inv <- read.table("weights4inv.txt",dec=".", header=TRUE, quote="\"",stringsAsFactors=FALSE)
+w1 <- weights4inv$W1
+w1 <- as.numeric(w1)
+w2 <- weights4inv$W2
+w2 <- as.numeric(w2)
+w3 <- weights4inv$W3
+w3 <- as.numeric(w3)
+w4 <- weights4inv$W4
+w4 <- as.numeric(w4)
+#calculating SD
+s1 <- sd(gold)
+s2 <- sd(orlen)
+s3 <- sd(fund)
+s4 <- sd(eur)
+#Calculating corellation
+corr12 <- cor(gold,orlen)
+corr13 <- cor(gold,fund)
+corr14 <- cor(gold, eur)
+corr23 <- cor(orlen, fund)
+corr24 <- cor(orlen, eur)
+corr34 <- cor(fund, eur)
+#calculating ip
+iportfolio <- mean(gold)*w1+mean(orlen)*w2+mean(fund)*w3+mean(eur)*w4
+#portfolio risk
+sdp <- (w1^2*s1^2 + w2^2*s2^2 + w3^2*s3^2 + w4^2*s4^2 + 2*w1*w2*s1*s2*corr12 + 2*w1*w3*s1*s3*corr13 + 2*w1*w4*s1*s4*corr14 + 
+          2*w2*w3*s2*s3*corr23 + 2*w2*w4*s2*s4*corr24 + 2*w3*w4*s3*s4*corr34)^0.5
+#calculating effectivness
+rf <- 0
+sharp <- (iportfolio-rf)/sdp
+#preparing df with results
+data <- cbind(w1, w2, w3, w4, iportfolio, sdp, sharp)
+data <- as.data.frame(data)
+#finding interesting portfolios
+min.risk <- subset(data, data$sdp==min(data$sdp))
+max.effectivness <- subset(data, data$sharp==max(data$sharp))
+max.ip <- subset(data, data$iportfolio==max(data$iportfolio))
+max.w1 <- subset(data, data$w1==1)
+max.w2 <- subset(data, data$w2==1)
+max.w3 <- subset(data, data$w3==1)
+max.w4 <- subset(data, data$w4==1)
+des <- c("Minimal risk portfolio", "Maximum efficiency portfolio", "Maximum rate of return portfolio", "Max weight one portfolio", "Max weight two portfolio", "Max weight three portfolio", "Max weight four portfolio")
+#Creating table with results 3 portfolios and showing results in console
+results <- cbind(rbind(min.risk, max.effectivness, max.ip, max.w1, max.w2, max.w3, max.w4), des)
+write.csv(x=results, file = "results.csv", row.names=FALSE)
+
+results
+# Filtrujemy dane dla "Maximum efficiency portfolio"
+max_efficiency <- results[results$des == "Maximum efficiency portfolio", ]
+
+# Tworzenie danych do wykresu kołowego na podstawie wybranych wag
+pie_chart <- data.frame(
+  category = c("EUR/PLN", "MCI", "PKN", "XAU/PLN"),
+  value = c(max_efficiency$w4, max_efficiency$w3, max_efficiency$w2, max_efficiency$w1)
+)
+
+# Dodanie etykiet legendy
+pie_chart$legend_label <- paste0(
+  pie_chart$category,
+  " - ",
+  round(pie_chart$value * 100, 1),
+  " %"
+)
+
+# Tworzenie wykresu kołowego
+library(ggplot2)
+
+ggplot(pie_chart, aes(x = "", y = value, fill = category)) +
+  geom_bar(stat = "identity", width = 1, color = "white") +
+  coord_polar(theta = "y") +
+  theme_void() +
+  scale_fill_manual(
+    values = c(
+      "EUR/PLN" = "#fc8686",
+      "MCI" = "#8484ff",
+      "PKN" = "#80ff80",
+      "XAU/PLN" = "#ffd586"
+    ),
+    labels = pie_chart$legend_label
+  ) +
+  ggtitle("Maximum Efficiency Portfolio")
+
+
+
+
+
+```
+
+## Cechy Portfela o Maksymalnej Efektywności
+
+### Wagi Aktywów
+- **EUR/PLN (w4):** 100% (całość portfela ulokowana w EUR/PLN).
+- **MCI (w3):** 0%.
+- **PKN Orlen (w2):** 0%.
+- **Złoto - XAU/PLN (w1):** 0%.
+
+Wynika z tego, że portfel całkowicie koncentruje się na jednym aktywie - **EUR/PLN**.
+
+### Oczekiwany Zwrot
+- Średni zwrot portfela wynosi około **0.0013 (0.13%)**.
+
+### Ryzyko Portfela (Odchylenie Standardowe)
+- Ryzyko (SD) wynosi około **0.0099 (0.99%)**, co czyni ten portfel relatywnie niskoryzykownym.
+
+### Wskaźnik Sharpe'a
+- Wskaźnik Sharpe'a wynosi około **0.1312**, co wskazuje na umiarkowaną efektywność tego portfela w stosunku do poziomu ryzyka.
+
+### Opis Alokacji
+Wybór tego portfela oznacza maksymalizację wskaźnika Sharpe'a, co może być odpowiednie dla inwestorów poszukujących równowagi pomiędzy zwrotem a ryzykiem przy minimalnym zaangażowaniu w bardziej ryzykowne aktywa.
+
+---
+
+### Zalety Tego Portfela
+- **Niskie ryzyko:** Całkowita koncentracja na EUR/PLN, które w analizach historycznych cechuje się niską zmiennością.
+- **Prostota:** Brak dywersyfikacji oznacza brak potrzeby zarządzania wieloma aktywami.
+
+---
+
+### Wady Tego Portfela
+- **Brak dywersyfikacji:** Portfel jest całkowicie uzależniony od wyników EUR/PLN, co zwiększa ryzyko systematyczne (specyficzne dla tego rynku).
+- **Potencjalnie niższy zwrot:** Skoncentrowanie na jednym aktywie o niskiej zmienności może ograniczać możliwości uzyskania wyższych zysków
+
+
+
+
+
 ## Wartość współczynników korelacji dla analizowanych inwestycji 
 **Korelacja** to miara statystyczna, która pokazuje, w jakim stopniu dwie zmienne są ze sobą powiązane. Wartość korelacji wskazuje na siłę i kierunek zależności między zmiennymi:
 
