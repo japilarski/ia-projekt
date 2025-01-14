@@ -580,6 +580,144 @@ sharpe_ratio <- return_rate / portfolio_risk
 # cat(sum(pkn_pln$log_return))
 ```
 
+
+```{r , eval=TRUE, echo = FALSE, fig.align='center'}
+# Biblioteki
+library(tidyverse)
+library(quadprog)
+
+# Przygotowanie danych (wykorzystanie logarytmicznych stóp zwrotu)
+returns <- tibble(
+  date = euro_pln$Data,  
+  EURPLN = euro_pln$log_return,
+  MCI = mci_pln$log_return,
+  PKN = pkn_pln$log_return,
+  XAU = xau_pln$log_return
+)
+
+# Funkcja do obliczania wag portfela minimalnego ryzyka
+calculate_portfolio_weights <- function(returns_window) {
+  mean_returns <- colMeans(returns_window, na.rm = TRUE)
+  cov_matrix <- cov(returns_window, use = "complete.obs")
+  
+  n <- ncol(returns_window)
+  Dmat <- 2 * cov_matrix
+  dvec <- rep(0, n)
+  Amat <- cbind(rep(1, n), diag(n))  # Suma wag = 1, wagi >= 0
+  bvec <- c(1, rep(0, n))
+  
+  solution <- solve.QP(Dmat, dvec, Amat, bvec, meq = 1)
+  return(solution$solution)  # Zwraca wagi
+}
+
+# Parametry analizy
+window_size <- 30  # Długość okna w dniach
+step <- 1          # Krok przesunięcia okna
+
+# Wyniki dla różnych podejść
+results <- list()
+
+# **Sposób 1: Okna przesuwane o jedną jednostkę czasu**
+results$sposob1 <- list()
+for (start_idx in seq(1, nrow(returns) - window_size + 1, by = step)) {
+  end_idx <- start_idx + window_size - 1
+  rolling_data <- returns[start_idx:end_idx, -1]
+  weights <- calculate_portfolio_weights(rolling_data)
+  results$sposob1[[length(results$sposob1) + 1]] <- list(
+    date = returns$date[end_idx],
+    weights = weights
+  )
+}
+
+# **Sposób 2: Podział na niezależne okresy**
+results$sposob2 <- list()
+for (start_idx in seq(1, nrow(returns), by = window_size)) {
+  end_idx <- min(start_idx + window_size - 1, nrow(returns))
+  rolling_data <- returns[start_idx:end_idx, -1]
+  weights <- calculate_portfolio_weights(rolling_data)
+  results$sposob2[[length(results$sposob2) + 1]] <- list(
+    date = returns$date[end_idx],
+    weights = weights
+  )
+}
+
+# **Sposób 3: Łączone okna (cumulating windows)**
+results$sposob3 <- list()
+for (start_idx in seq(1, nrow(returns) - window_size + 1, by = step)) {
+  end_idx <- start_idx + window_size - 1
+  cumulative_data <- returns[1:end_idx, -1]
+  weights <- calculate_portfolio_weights(cumulative_data)
+  results$sposob3[[length(results$sposob3) + 1]] <- list(
+    date = returns$date[end_idx],
+    weights = weights
+  )
+}
+
+# **Sposób 4: Okna przesuwane co stały krok (np. co 10 dni)**
+step_large <- 10  # Dłuższy krok
+results$sposob4 <- list()
+for (start_idx in seq(1, nrow(returns) - window_size + 1, by = step_large)) {
+  end_idx <- start_idx + window_size - 1
+  rolling_data <- returns[start_idx:end_idx, -1]
+  weights <- calculate_portfolio_weights(rolling_data)
+  results$sposob4[[length(results$sposob4) + 1]] <- list(
+    date = returns$date[end_idx],
+    weights = weights
+  )
+}
+
+# Konwersja wyników do ramki danych
+prepare_results <- function(result_list) {
+  df <- do.call(rbind, lapply(result_list, function(x) {
+    data.frame(date = x$date, t(x$weights))
+  }))
+  colnames(df)[2:5] <- c("EURPLN", "MCI", "PKN", "XAU")  # Ustawienie nazw aktywów
+  return(df)
+}
+
+results_df <- lapply(results, prepare_results)
+
+# Wizualizacja - wykresy dla różnych metod (osobne wykresy)
+plot_results <- function(df, method_name) {
+  df_long <- df %>%
+    pivot_longer(cols = -date, names_to = "asset", values_to = "weight")
+  
+  ggplot(df_long, aes(x = date, y = weight, color = asset)) +
+    geom_line() +
+    labs(title = paste("Zmiany wag portfela -", method_name),
+         x = "Data",
+         y = "Waga w portfelu",
+         color = "Aktywo") +
+    theme_minimal() +
+    theme(legend.position = "bottom",
+          legend.title = element_text(size = 10),
+          legend.text = element_text(size = 8))
+}
+
+# Tworzenie osobnych wykresów dla każdego podejścia
+plot1 <- plot_results(results_df$sposob1, "Okna przesuwane o jedną jednostkę")
+plot2 <- plot_results(results_df$sposob2, "Podział na niezależne okresy")
+plot3 <- plot_results(results_df$sposob3, "Łączone okna")
+plot4 <- plot_results(results_df$sposob4, "Okna przesuwane co stały krok")
+
+plot1
+plot2
+plot3
+plot4
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
 ## Bibliografia
 
 1.  Urząd Komisji Nadzoru Finansowego. “KNF.” *Knf.gov.pl*, 2024, [www.knf.gov.pl/dla_rynku/procesy_licencyjne/kapitalowy/zarzadzajacy_alternatywnymi_spolkami_inwestycyjnymi_ZASI/pytania_i_odpowiedzi. Accessed 8 Jan. 2025](http://www.knf.gov.pl/dla_rynku/procesy_licencyjne/kapitalowy/zarzadzajacy_alternatywnymi_spolkami_inwestycyjnymi_ZASI/pytania_i_odpowiedzi.%20Accessed%208%20Jan.%202025).
