@@ -11,6 +11,7 @@ theme: paper
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(ggcorrplot)
 library(readxl)
 library(dplyr)
 library(ggplot2)
@@ -45,7 +46,7 @@ Przeprowadzona analiza dotyczy portfela inwestycyjnego złożonego z 3 inwestycj
 
 Jest polska Alternatywna Spółka Inwestycyjna (ASI), czyli fundusz, który oferuje inwestorom alternatywne opcje inwestycyjne, które charakteryzują się wyższym ryzykiem, ale mogą przynieść atrakcyjniejsze zwroty, które nie są dostępne w ramach tradycyjnych funduszy inwestycyjnych. Specjalizuje się w inwestycjach związanych z cyfrową transformacją gospodarki oraz innowacyjnymi modelami biznesowymi. Aktualne portfolio funduszu obejmuje 14 aktywnych inwestycji w takich obszarach jak e-commerce, fintech, SaaS, cloud gaming, rynki internetowe oraz technologie związane z zieloną transformacją i klimatem (climatech). Fundusz koncentruje się na wspieraniu firm, które wprowadzają innowacyjne rozwiązania w swoich branżach, a także na wspieraniu rozwoju infrastruktury internetowej.
 
-### **PKN ORLEN SA
+### **PKN ORLEN SA**
 
 PKN ORLEN SA to polski koncern multienergetyczny, który działa w sektorze naftowym, gazowym, petrochemicznym oraz energii odnawialnej. Jest jednym z największych przedsiębiorstw w Europie Środkowo-Wschodniej, notowanym na Giełdzie Papierów Wartościowych w Warszawie.
 PKN ORLEN posiada rozwiniętą sieć stacji paliwowych w Polsce oraz w regionie Europy Środkowo-Wschodniej, oferując szeroką gamę produktów i usług, w tym programy lojalnościowe oraz rozwiązania z zakresu elektromobilności. Portfolio spółki obejmuje również zaawansowane technologie petrochemiczne oraz produkty chemiczne, które znajdują zastosowanie w wielu branżach przemysłowych.
@@ -258,6 +259,63 @@ ggplot(pie_chart, aes(x = "", y = value, fill = category)) +
     labels = pie_chart$legend_label
   )
 ```
+
+## Wartość współczynników korelacji dla analizowanych inwestycji 
+**Korelacja** to miara statystyczna, która pokazuje, w jakim stopniu dwie zmienne są ze sobą powiązane. Wartość korelacji wskazuje na siłę i kierunek zależności między zmiennymi:
+
+- **Korelacja dodatnia (pozytywna)**: Kiedy jedna zmienna rośnie, druga również rośnie.
+- **Korelacja ujemna (negatywna)**: Kiedy jedna zmienna rośnie, druga maleje.
+- **Brak korelacji**: Brak jakiejkolwiek zależności między zmiennymi.
+
+Wartość korelacji mieści się w zakresie od **-1 do 1**:
+- **1**: Perfekcyjna dodatnia korelacja — zmienne poruszają się w tej samej fazie.
+- **-1**: Perfekcyjna ujemna korelacja — zmienne poruszają się w przeciwnych kierunkach.
+- **0**: Brak korelacji — zmienne są niezależne.
+
+```{r  korelacja , eval=TRUE, echo = FALSE, fig.align='center'}
+returns <- tibble(
+  EURPLN = euro_pln$log_return,
+  MCI = mci_pln$log_return,
+  PKN = pkn_pln$log_return,
+  XAU = xau_pln$log_return
+)
+
+# Obliczanie macierzy korelacji dla logarytmicznych stóp zwrotu
+cor_matrix <- cor(returns)
+
+# Wyświetlanie wyników
+print(cor_matrix)
+
+# Tworzenie ciepłej mapy korelacji
+ggcorrplot(cor_matrix, 
+           method = "circle", 
+           type = "lower", 
+           lab = TRUE, 
+           lab_size = 3, 
+           colors = c("blue", "white", "red"))
+
+```
+
+## Interpretacja korelacji
+
+1. **Korelacja między EURPLN a innymi zmiennymi:**
+   - **EURPLN ↔ MCI**: Współczynnik korelacji wynosi -0.183, co wskazuje na **słabą ujemną korelację** między tymi dwiema zmiennymi. Oznacza to, że wzrost wartości EURPLN jest lekko związany ze spadkiem wartości MCI.
+   - **EURPLN ↔ PKN**: Korelacja wynosi 0.029, co oznacza, że **brak jest istotnej korelacji** pomiędzy tymi zmiennymi.
+   - **EURPLN ↔ XAU**: Korelacja wynosi 0.270, co wskazuje na **słabą dodatnią korelację**. Wzrost wartości EURPLN jest nieznacznie powiązany z wzrostem wartości XAU.
+
+2. **Korelacja między MCI a innymi zmiennymi:**
+   - **MCI ↔ PKN**: Korelacja wynosi 0.038, co oznacza, że istnieje **bardzo słaba dodatnia korelacja** między tymi zmiennymi, praktycznie brak zauważalnej zależności.
+   - **MCI ↔ XAU**: Współczynnik korelacji wynosi 0.115, co sugeruje **słabą dodatnią korelację** między MCI a XAU, choć nie jest to znacząca zależność.
+
+3. **Korelacja między PKN a XAU:**
+   - **PKN ↔ XAU**: Korelacja wynosi 0.037, co wskazuje na **bardzo słabą dodatnią korelację** pomiędzy tymi dwiema zmiennymi. Zmiany w wartości PKN mają minimalny wpływ na zmiany w wartości XAU.
+
+---
+
+## Podsumowanie
+
+- **Najsilniejsza korelacja** to korelacja między EURPLN a XAU, która wynosi 0.270, wskazując na niewielką, ale zauważalną dodatnią zależność.
+- Wartości korelacji między pozostałymi parami zmiennych są słabe lub praktycznie zerowe, co oznacza, że zmienne te nie wykazują silnych powiązań ze sobą.
 
 ## Zbiór możliwości inwestycyjnych
 

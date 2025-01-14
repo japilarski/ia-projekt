@@ -2,3 +2,4 @@
 *.xlsx
 .html
 temp.r
+.Rproj.user
