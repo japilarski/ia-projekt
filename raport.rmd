@@ -264,7 +264,7 @@ ggplot(pie_chart, aes(x = "", y = value, fill = category)) +
 
 ```{r max_eff_portfolio, eval=TRUE, echo = FALSE, fig.align='center'}
 #importing data
-ror <- read.csv("ror.csv", sep=";", dec=",")
+ror <- read.csv("ror.csv", sep = ";", dec = ",")
 #We choose three assets for further analysis 
 portfolio4 <- ror[c(1, 2, 3, 4)]
 #Variables for all calculations
@@ -273,62 +273,70 @@ orlen <- portfolio4$orlen
 fund <- portfolio4$fund
 eur <- portfolio4$eur
 #importing weights from file txt
-weights4inv <- read.table("weights4inv.txt",dec=".", header=TRUE, quote="\"",stringsAsFactors=FALSE)
-w1 <- weights4inv$W1
-w1 <- as.numeric(w1)
-w2 <- weights4inv$W2
-w2 <- as.numeric(w2)
-w3 <- weights4inv$W3
-w3 <- as.numeric(w3)
-w4 <- weights4inv$W4
-w4 <- as.numeric(w4)
+weights4inv <- read.table("weights4inv.txt", dec = ".", header = TRUE, quote = "\"", stringsAsFactors = FALSE)
+w1 <- as.numeric(weights4inv$W1)
+w2 <- as.numeric(weights4inv$W2)
+w3 <- as.numeric(weights4inv$W3)
+w4 <- as.numeric(weights4inv$W4)
 #calculating SD
 s1 <- sd(gold)
 s2 <- sd(orlen)
 s3 <- sd(fund)
 s4 <- sd(eur)
 #Calculating corellation
-corr12 <- cor(gold,orlen)
-corr13 <- cor(gold,fund)
+corr12 <- cor(gold, orlen)
+corr13 <- cor(gold, fund)
 corr14 <- cor(gold, eur)
 corr23 <- cor(orlen, fund)
 corr24 <- cor(orlen, eur)
 corr34 <- cor(fund, eur)
 #calculating ip
-iportfolio <- mean(gold)*w1+mean(orlen)*w2+mean(fund)*w3+mean(eur)*w4
+iportfolio <- mean(gold) * w1 + mean(orlen) * w2 + mean(fund) * w3 + mean(eur) * w4
 #portfolio risk
-sdp <- (w1^2*s1^2 + w2^2*s2^2 + w3^2*s3^2 + w4^2*s4^2 + 2*w1*w2*s1*s2*corr12 + 2*w1*w3*s1*s3*corr13 + 2*w1*w4*s1*s4*corr14 + 
-          2*w2*w3*s2*s3*corr23 + 2*w2*w4*s2*s4*corr24 + 2*w3*w4*s3*s4*corr34)^0.5
-#calculating effectivness
+sdp <- sqrt(w1^2 * s1^2 + w2^2 * s2^2 + w3^2 * s3^2 + w4^2 * s4^2 +
+              2 * w1 * w2 * s1 * s2 * corr12 + 
+              2 * w1 * w3 * s1 * s3 * corr13 + 
+              2 * w1 * w4 * s1 * s4 * corr14 + 
+              2 * w2 * w3 * s2 * s3 * corr23 + 
+              2 * w2 * w4 * s2 * s4 * corr24 + 
+              2 * w3 * w4 * s3 * s4 * corr34)
+#calculating effectiveness
 rf <- 0
-sharp <- (iportfolio-rf)/sdp
+sharp <- (iportfolio - rf) / sdp
 #preparing df with results
-data <- cbind(w1, w2, w3, w4, iportfolio, sdp, sharp)
-data <- as.data.frame(data)
+data <- data.frame(w1 = w1, w2 = w2, w3 = w3, w4 = w4, iportfolio = iportfolio, sdp = sdp, sharp = sharp)
 #finding interesting portfolios
-min.risk <- subset(data, data$sdp==min(data$sdp))
-max.effectivness <- subset(data, data$sharp==max(data$sharp))
-max.ip <- subset(data, data$iportfolio==max(data$iportfolio))
-max.w1 <- subset(data, data$w1==1)
-max.w2 <- subset(data, data$w2==1)
-max.w3 <- subset(data, data$w3==1)
-max.w4 <- subset(data, data$w4==1)
-des <- c("Minimal risk portfolio", "Maximum efficiency portfolio", "Maximum rate of return portfolio", "Max weight one portfolio", "Max weight two portfolio", "Max weight three portfolio", "Max weight four portfolio")
-#Creating table with results 3 portfolios and showing results in console
-results <- cbind(rbind(min.risk, max.effectivness, max.ip, max.w1, max.w2, max.w3, max.w4), des)
-write.csv(x=results, file = "results.csv", row.names=FALSE)
+min.risk <- subset(data, data$sdp == min(data$sdp))
+max.effectivness <- subset(data, data$sharp == max(data$sharp))
+max.ip <- subset(data, data$iportfolio == max(data$iportfolio))
+max.w1 <- subset(data, data$w1 == 1)
+max.w2 <- subset(data, data$w2 == 1)
+max.w3 <- subset(data, data$w3 == 1)
+max.w4 <- subset(data, data$w4 == 1)
+descriptions <- c("Minimal risk portfolio", "Maximum efficiency portfolio", "Maximum rate of return portfolio", 
+                  "Max weight one portfolio", "Max weight two portfolio", 
+                  "Max weight three portfolio", "Max weight four portfolio")
+#Combining results
+results <- rbind(min.risk, max.effectivness, max.ip, max.w1, max.w2, max.w3, max.w4)
+results$description <- descriptions
+#Reordering columns
+results <- results[, c("description", "w1", "w2", "w3", "w4", "iportfolio", "sdp", "sharp")]
 
+# Saving results to CSV
+write.csv(results, file = "results.csv", row.names = FALSE)
+
+# Display results
 results
-# Filtrujemy dane dla "Maximum efficiency portfolio"
-max_efficiency <- results[results$des == "Maximum efficiency portfolio", ]
+# Filtering data for "Maximum efficiency portfolio"
+max_efficiency <- results[results$description == "Maximum efficiency portfolio", ]
 
-# Tworzenie danych do wykresu kołowego na podstawie wybranych wag
+# Tworzenie danych do wykresu kołowego
 pie_chart <- data.frame(
-  category = c("EUR/PLN", "MCI", "PKN", "XAU/PLN"),
-  value = c(max_efficiency$w4, max_efficiency$w3, max_efficiency$w2, max_efficiency$w1)
+  category = c("XAU/PLN", "PKN", "MCI", "EUR/PLN"),
+  value = as.numeric(max_efficiency[1, c("w1", "w2", "w3", "w4")])
 )
 
-# Dodanie etykiet legendy
+# Dodanie legendy z etykietami (łącznie z kategoriami o wadze 0)
 pie_chart$legend_label <- paste0(
   pie_chart$category,
   " - ",
@@ -336,26 +344,29 @@ pie_chart$legend_label <- paste0(
   " %"
 )
 
-# Tworzenie wykresu kołowego
-library(ggplot2)
+# Ustawienie kolorów w odpowiedniej kolejności
+fill_colors <- c(
+  "#fc8686",  # Kolor dla XAU/PLN
+  "#8484ff"   # Kolor dla PKN
+)
 
+# Przygotowanie danych (usunęliśmy kategorie z 0%)
+pie_chart <- data.frame(
+  category = c("XAU/PLN"),  # Tylko kategoria XAU/PLN z wartością 100%
+  value = c(100),  # XAU/PLN ma 100%
+  legend_label = c("XAU/PLN - 100 %")  # Etykieta legendy
+)
+
+# Tworzenie wykresu kołowego z zachowaniem wszystkich kategorii w legendzie
 ggplot(pie_chart, aes(x = "", y = value, fill = category)) +
   geom_bar(stat = "identity", width = 1, color = "white") +
   coord_polar(theta = "y") +
   theme_void() +
   scale_fill_manual(
-    values = c(
-      "EUR/PLN" = "#fc8686",
-      "MCI" = "#8484ff",
-      "PKN" = "#80ff80",
-      "XAU/PLN" = "#ffd586"
-    ),
-    labels = pie_chart$legend_label
+    values = fill_colors,
+    labels = c("XAU/PLN - 100 %", "PKN - 0 %")  # Pokażemy także kategorię z 0% w legendzie
   ) +
   ggtitle("Maximum Efficiency Portfolio")
-
-
-
 
 
 ```
@@ -363,12 +374,12 @@ ggplot(pie_chart, aes(x = "", y = value, fill = category)) +
 ## Cechy Portfela o Maksymalnej Efektywności
 
 ### Wagi Aktywów
-- **EUR/PLN (w4):** 100% (całość portfela ulokowana w EUR/PLN).
-- **MCI (w3):** 0%.
+- **Złoto - XAU/PLN (w1):** 100% (całość portfela ulokowana w EUR/PLN).
 - **PKN Orlen (w2):** 0%.
-- **Złoto - XAU/PLN (w1):** 0%.
+- **MCI (w3):** 0%.
+- **EUR/PLN (w4):** 0%.
 
-Wynika z tego, że portfel całkowicie koncentruje się na jednym aktywie - **EUR/PLN**.
+Wynika z tego, że portfel całkowicie koncentruje się na jednym aktywie - **Złoto - XAU/PLN **.
 
 ### Oczekiwany Zwrot
 - Średni zwrot portfela wynosi około **0.0013 (0.13%)**.
@@ -385,13 +396,13 @@ Wybór tego portfela oznacza maksymalizację wskaźnika Sharpe'a, co może być 
 ---
 
 ### Zalety Tego Portfela
-- **Niskie ryzyko:** Całkowita koncentracja na EUR/PLN, które w analizach historycznych cechuje się niską zmiennością.
+- **Niskie ryzyko:** Całkowita koncentracja na złocie, które w analizach historycznych cechuje się niską zmiennością.
 - **Prostota:** Brak dywersyfikacji oznacza brak potrzeby zarządzania wieloma aktywami.
 
 ---
 
 ### Wady Tego Portfela
-- **Brak dywersyfikacji:** Portfel jest całkowicie uzależniony od wyników EUR/PLN, co zwiększa ryzyko systematyczne (specyficzne dla tego rynku).
+- **Brak dywersyfikacji:** Portfel jest całkowicie uzależniony od wyników złota, co zwiększa ryzyko systematyczne (specyficzne dla tego rynku).
 - **Potencjalnie niższy zwrot:** Skoncentrowanie na jednym aktywie o niskiej zmienności może ograniczać możliwości uzyskania wyższych zysków
 
 
@@ -582,132 +593,80 @@ sharpe_ratio <- return_rate / portfolio_risk
 
 
 ```{r , eval=TRUE, echo = FALSE, fig.align='center'}
-# Biblioteki
-library(tidyverse)
-library(quadprog)
+# Importowanie wymaganych pakietów
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(PerformanceAnalytics)
 
-# Przygotowanie danych (wykorzystanie logarytmicznych stóp zwrotu)
-returns <- tibble(
-  date = euro_pln$Data,  
-  EURPLN = euro_pln$log_return,
-  MCI = mci_pln$log_return,
-  PKN = pkn_pln$log_return,
-  XAU = xau_pln$log_return
-)
+# Wczytanie danych stóp zwrotu
+ror <- read.csv("ror.csv", sep = ";", dec = ",")
+portfolio_assets <- ror[c("gold", "orlen", "fund", "eur")]
 
-# Funkcja do obliczania wag portfela minimalnego ryzyka
-calculate_portfolio_weights <- function(returns_window) {
-  mean_returns <- colMeans(returns_window, na.rm = TRUE)
-  cov_matrix <- cov(returns_window, use = "complete.obs")
+# Liczba okresów do analizy (np. miesięczne przesunięcie)
+rolling_window <- 30  # 30 dni dla miesięcznej analizy
+
+# Tworzenie pustej ramki danych na wyniki
+results_df <- data.frame()
+
+# Iteracyjne wyznaczanie optymalnych portfeli dla przesuwającego się okna czasowego
+for (i in 1:(nrow(portfolio_assets) - rolling_window)) {
+  window_data <- portfolio_assets[i:(i + rolling_window - 1), ]
+
+  # Średnie stopy zwrotu i macierz kowariancji
+  mean_returns <- colMeans(window_data)
+  cov_matrix <- cov(window_data)
+
+  # Optymalne wagi portfela minimalizującego ryzyko
+  inv_cov <- solve(cov_matrix)
+  ones <- rep(1, ncol(window_data))
+  w_min_var <- inv_cov %*% ones / sum(inv_cov %*% ones)
   
-  n <- ncol(returns_window)
-  Dmat <- 2 * cov_matrix
-  dvec <- rep(0, n)
-  Amat <- cbind(rep(1, n), diag(n))  # Suma wag = 1, wagi >= 0
-  bvec <- c(1, rep(0, n))
-  
-  solution <- solve.QP(Dmat, dvec, Amat, bvec, meq = 1)
-  return(solution$solution)  # Zwraca wagi
+  # Oczekiwane stopy zwrotu i ryzyko
+  port_return <- sum(w_min_var * mean_returns)
+  port_risk <- sqrt(t(w_min_var) %*% cov_matrix %*% w_min_var)
+
+  # Zapis wyników dla danego okresu
+  results_df <- rbind(results_df, data.frame(
+    Period = i,
+    Return = port_return,
+    Risk = port_risk
+  ))
 }
 
-# Parametry analizy
-window_size <- 30  # Długość okna w dniach
-step <- 1          # Krok przesunięcia okna
-
-# Wyniki dla różnych podejść
-results <- list()
-
-# **Sposób 1: Okna przesuwane o jedną jednostkę czasu**
-results$sposob1 <- list()
-for (start_idx in seq(1, nrow(returns) - window_size + 1, by = step)) {
-  end_idx <- start_idx + window_size - 1
-  rolling_data <- returns[start_idx:end_idx, -1]
-  weights <- calculate_portfolio_weights(rolling_data)
-  results$sposob1[[length(results$sposob1) + 1]] <- list(
-    date = returns$date[end_idx],
-    weights = weights
-  )
-}
-
-# **Sposób 2: Podział na niezależne okresy**
-results$sposob2 <- list()
-for (start_idx in seq(1, nrow(returns), by = window_size)) {
-  end_idx <- min(start_idx + window_size - 1, nrow(returns))
-  rolling_data <- returns[start_idx:end_idx, -1]
-  weights <- calculate_portfolio_weights(rolling_data)
-  results$sposob2[[length(results$sposob2) + 1]] <- list(
-    date = returns$date[end_idx],
-    weights = weights
-  )
-}
-
-# **Sposób 3: Łączone okna (cumulating windows)**
-results$sposob3 <- list()
-for (start_idx in seq(1, nrow(returns) - window_size + 1, by = step)) {
-  end_idx <- start_idx + window_size - 1
-  cumulative_data <- returns[1:end_idx, -1]
-  weights <- calculate_portfolio_weights(cumulative_data)
-  results$sposob3[[length(results$sposob3) + 1]] <- list(
-    date = returns$date[end_idx],
-    weights = weights
-  )
-}
-
-# **Sposób 4: Okna przesuwane co stały krok (np. co 10 dni)**
-step_large <- 10  # Dłuższy krok
-results$sposob4 <- list()
-for (start_idx in seq(1, nrow(returns) - window_size + 1, by = step_large)) {
-  end_idx <- start_idx + window_size - 1
-  rolling_data <- returns[start_idx:end_idx, -1]
-  weights <- calculate_portfolio_weights(rolling_data)
-  results$sposob4[[length(results$sposob4) + 1]] <- list(
-    date = returns$date[end_idx],
-    weights = weights
-  )
-}
-
-# Konwersja wyników do ramki danych
-prepare_results <- function(result_list) {
-  df <- do.call(rbind, lapply(result_list, function(x) {
-    data.frame(date = x$date, t(x$weights))
-  }))
-  colnames(df)[2:5] <- c("EURPLN", "MCI", "PKN", "XAU")  # Ustawienie nazw aktywów
-  return(df)
-}
-
-results_df <- lapply(results, prepare_results)
-
-# Wizualizacja - wykresy dla różnych metod (osobne wykresy)
-plot_results <- function(df, method_name) {
-  df_long <- df %>%
-    pivot_longer(cols = -date, names_to = "asset", values_to = "weight")
-  
-  ggplot(df_long, aes(x = date, y = weight, color = asset)) +
-    geom_line() +
-    labs(title = paste("Zmiany wag portfela -", method_name),
-         x = "Data",
-         y = "Waga w portfelu",
-         color = "Aktywo") +
-    theme_minimal() +
-    theme(legend.position = "bottom",
-          legend.title = element_text(size = 10),
-          legend.text = element_text(size = 8))
-}
-
-# Tworzenie osobnych wykresów dla każdego podejścia
-plot1 <- plot_results(results_df$sposob1, "Okna przesuwane o jedną jednostkę")
-plot2 <- plot_results(results_df$sposob2, "Podział na niezależne okresy")
-plot3 <- plot_results(results_df$sposob3, "Łączone okna")
-plot4 <- plot_results(results_df$sposob4, "Okna przesuwane co stały krok")
-
-plot1
-plot2
-plot3
-plot4
+# Wykres efektywnej granicy portfela w czasie
+ggplot(results_df, aes(x = Risk, y = Return, color = Period)) +
+  geom_point() +
+  geom_smooth(se = FALSE, method = "loess") +
+  scale_color_gradient(low = "blue", high = "red") +
+  labs(title = "Zmiany efektywnych portfeli w czasie",
+       x = "Ryzyko portfela (%)",
+       y = "Stopa zwrotu (%)") +
+  theme_minimal()
 
 
 ```
 
+# Interpretacja wyników
+1.**Co przedstawia wykres?** 
+Wykres przedstawia, jak **optymalne portfele inwestycyjne zmieniają się w czasie**, analizując zależność między **ryzykiem a stopą zwrotu**.
+
+2.**Elementy wykresu ** 
+- **Punkty** 🟣🔴 → Reprezentują optymalne portfele w kolejnych okresach.
+  - Kolor oznacza **moment w czasie**.
+  - **Niebieskie punkty** to wcześniejsze okresy.
+  - **Czerwone punkty** to najnowsze okresy.
+- **Oś X (Ryzyko portfela [%])** → Mierzy poziom zmienności.
+- **Oś Y (Stopa zwrotu [%])** → Oczekiwana rentowność.
+- **Niebieska linia** → Trend zmian portfeli w czasie.
+
+3.**Wnioski** 
+- Portfele o niskim ryzyku miały początkowo stosunkowo wysokie stopy zwrotu, ale trend ten zmieniał się z czasem.
+- Występują okresy **spadku efektywności portfeli**, ale także momenty poprawy.
+- Kolory pomagają zrozumieć, które momenty były bardziej korzystne.
+
+4.**Podsumowanie** 
+Wykres ten pozwala analizować **ewolucję efektywnych portfeli** i identyfikować okresy bardziej oraz mniej optymalne dla inwestorów.
 
 
 
