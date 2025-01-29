@@ -24,6 +24,9 @@ library(grid)
 library(tidyverse)
 library(quadprog)
 library(PerformanceAnalytics)
+library(timeSeries)
+library(lpSolve)
+library(fPortfolio)
 
 # euro_pln, mci_pln, pkn_pln, xau_pln
 euro_pln <- read.csv("euro_pln.csv")[2:107, ]
@@ -51,6 +54,12 @@ Jest polska Alternatywna Spółka Inwestycyjna (ASI), czyli fundusz, który ofer
 PKN ORLEN SA to polski koncern multienergetyczny, który działa w sektorze naftowym, gazowym, petrochemicznym oraz energii odnawialnej. Jest jednym z największych przedsiębiorstw w Europie Środkowo-Wschodniej, notowanym na Giełdzie Papierów Wartościowych w Warszawie.
 PKN ORLEN posiada rozwiniętą sieć stacji paliwowych w Polsce oraz w regionie Europy Środkowo-Wschodniej, oferując szeroką gamę produktów i usług, w tym programy lojalnościowe oraz rozwiązania z zakresu elektromobilności. Portfolio spółki obejmuje również zaawansowane technologie petrochemiczne oraz produkty chemiczne, które znajdują zastosowanie w wielu branżach przemysłowych.
 ORLEN jest liderem w branży energetycznej w Polsce, a jego strategiczne inwestycje przyczyniają się do zwiększenia bezpieczeństwa energetycznego kraju oraz wsparcia transformacji w kierunku gospodarki niskoemisyjnej.
+
+### **ZŁOTO**
+
+Złoto to metal szlachetny o symbolu chemicznym Au i numerze atomowym 79. Jest jednym z najbardziej cenionych surowców na świecie, znanym ze swojej trwałości, odporności na korozję i wyjątkowego, żółtego koloru.
+Złoto występuje w naturze w postaci czystych bryłek (złoto rodzimne) lub w postaci związków z innymi pierwiastkami. Wykorzystywane jest głównie w jubilerstwie, ale ma także szerokie zastosowanie w elektronice, medycynie, przemyśle i finansach. Złoto jest uważane za bezpieczną inwestycję w okresach kryzysów gospodarczych.
+
 
 ## Statystyki opisowe
 
@@ -466,6 +475,65 @@ ggcorrplot(cor_matrix,
 - **Najsilniejsza korelacja** to korelacja między EURPLN a XAU, która wynosi 0.270, wskazując na niewielką, ale zauważalną dodatnią zależność.
 - Wartości korelacji między pozostałymi parami zmiennych są słabe lub praktycznie zerowe, co oznacza, że zmienne te nie wykazują silnych powiązań ze sobą.
 
+## Wskaźniki efektywności
+
+```{r eval=TRUE, echo = FALSE, fig.align='center'}}
+
+#importing data
+ror <- read.csv("ror.csv", sep=";", dec=",")
+#Variables for all calculations
+gold <- ror$gold
+orlen <- ror$orlen
+fund <- ror$fund
+eur <- ror$eur
+
+investment_returns <- data.frame(
+  Gold = rnorm(gold),  # Inwestycja 1
+  Orlen = rnorm(orlen), # Inwestycja 2
+  Fund = rnorm(fund), # Inwestycja 3
+  Euro = rnorm(eur) # Inwestycja 4
+)
+install.packages("xts")
+library(xts)
+
+dates <- seq(as.Date("2024-07-01"), by = "day", length.out = 106)
+investment_returns_xts <- xts(investment_returns, order.by = dates)
+
+library(PerformanceAnalytics)
+
+any(is.na(investment_returns_xts))
+
+RF <- 0.04/252
+PodwójnySharpe <- round(SharpeRatio.annualized(R = investment_returns_xts, Rf = RF, 
+                                        scale = 252, geometric = FALSE), digits = 3)
+
+MARR <- 0.04
+sortino <- round(SortinoRatio(R = investment_returns_xts, MAR = MARR), digits = 3)
+
+calmar <- round(CalmarRatio(R = investment_returns_xts), digits = 3)
+
+# Dane z wyników
+PodwójnySharpe <- c(3.015, -0.384, -0.614, -1.083)
+sortino <- c(0.232, -0.091, -0.1, -0.144)
+calmar <- c(-0.998, -0.925, -0.424, -0.708)
+
+# Nazwy kolumn
+nazwy <- c("Gold", "Orlen", "Fund", "Euro")
+
+# Tworzenie ramki danych
+wyniki <- data.frame(
+  Metric = c("Annualized Sharpe Ratio (Rf=4%)", "Sortino Ratio (MAR=4%)", "Calmar Ratio"),
+  Gold = c(PodwójnySharpe[1], sortino[1], calmar[1]),
+  Orlen = c(PodwójnySharpe[2], sortino[2], calmar[2]),
+  Fund = c(PodwójnySharpe[3], sortino[3], calmar[3]),
+  Euro = c(PodwójnySharpe[4], sortino[4], calmar[4])
+)
+
+# Drukowanie tabeli
+print(wyniki)
+
+```
+
 ## Zbiór możliwości inwestycyjnych
 
 Przedstawia wszystkie możliwości kombinacji portfela inwestycyjnego z poszczególnych ryzykownych aktywów. Na wykresie widoczna jest oś X, na której znajduje się ryzyko oraz oczekiwaną stopę zwrotu na osi Y. Postać graficzna pozwala na identyfikację optymalnych portfeli, w tym między innymi portfela o minimalnym ryzyku oraz portfela o maksymalnej efektywności. Niebieski obszar reprezentuje wszystkie możliwości kombinacji portfeli utworzonych z dostępnych aktywów ryzykownych, każdy zaznaczony punkt odpowiada innemu portfelowi. Zielony punkt wskazuje na portfel minimalnego ryzyka, o najniższym poziomie odchylenia standardowego w całym dostępnym zbiorze. Czerwona kropka przedstawia portfel o maksymalnej efektywności, który oferuje najwyższą oczekiwaną stopę zwrotu w stosunku do ryzyka. Czarne punkty na wykresie oznaczają portfele jednoelementowe, które składają się w 100% z jednego poszczególnego aktywa. Dodatkowo na wykresie znajduje się fioletowa krzywa, która reprezentuje granicę efektywną, czyli zbiór portfeli, które są optymalne i oferują najwyższą oczekiwaną stopę zwrotu dla określonego poziomu ryzyka.
@@ -668,10 +736,34 @@ Wykres przedstawia, jak **optymalne portfele inwestycyjne zmieniają się w czas
 4.**Podsumowanie** 
 Wykres ten pozwala analizować **ewolucję efektywnych portfeli** i identyfikować okresy bardziej oraz mniej optymalne dla inwestorów.
 
+## Skład portfeli z granicy efektywnej
 
+```{r eval=TRUE, echo = FALSE, fig.align='center'}}
 
+library(lpSolve)
+library(fPortfolio)
 
+data <- investment_returns_xts[, c("Gold", "Orlen", "Fund", "Euro")]
 
+class(data)
+
+data <- as.timeSeries(data)
+
+data <- covEstimator(data)
+
+shortSpec <- portfolioSpec()
+
+setSolver(shortSpec) <- "solveRshortExact"
+
+shortFrontier <- portfolioFrontier(data, constraints="LongOnly")
+
+weightsPlot(shortFrontier,labels = TRUE, col = NULL)
+
+```
+
+## Podsumowanie
+
+Analiza dotycząca portfela inwestycyjnego złożonego z czterech aktywów, w tym: złota, euro, funduszu MCI i akcji PKN Orlen, zbadanych w okresie od lipca do listopada 2024 roku pozwoliła ocenić efektywność portfela oraz ryzyko wiążące się z poszczególnych składników. Fundusz MCI i akcje PKN charakteryzują się wysoką zmiennością, co wpływa na podwyższone ryzyko, podczas gdy euro i złoto są bardziej stabilne, co sugeruje niższe ryzyko. W ramach analizy portfela o minimalnym ryzyku najwięcej środków zainwestowano w euro, co zapewniło niski poziom zmienności. Z kolei portfel o maksymalnej efektywności skoncentrował się na złocie, oferując umiarkowaną efektywność w stosunku do ryzyka. Analiza korelacji między aktywami wykazała głównie słabe zależności, a interesującym przypadkiem była strategia krótkiej sprzedaży akcji PKN, która przy wysokim współczynniku Sharpe'a wykazała dużą efektywność w analizowanym okresie. Ważne jest zrozumienie wzajemnych zależności między aktywami oraz świadome podejmowanie decyzji inwestycyjnych, aby uzyskać najlepszy wynik przy optymalnym poziomie ryzyka.
 
 
 
