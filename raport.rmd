@@ -27,6 +27,7 @@ library(PerformanceAnalytics)
 library(timeSeries)
 library(lpSolve)
 library(fPortfolio)
+library(xts)
 
 # euro_pln, mci_pln, pkn_pln, xau_pln
 euro_pln <- read.csv("euro_pln.csv")[2:107, ]
@@ -481,39 +482,28 @@ ggcorrplot(cor_matrix,
 
 #importing data
 ror <- read.csv("ror.csv", sep=";", dec=",")
-#Variables for all calculations
-gold <- ror$gold
-orlen <- ror$orlen
-fund <- ror$fund
-eur <- ror$eur
 
-investment_returns <- data.frame(
-  Gold = rnorm(gold),  # Inwestycja 1
-  Orlen = rnorm(orlen), # Inwestycja 2
-  Fund = rnorm(fund), # Inwestycja 3
-  Euro = rnorm(eur) # Inwestycja 4
-)
-install.packages("xts")
 library(xts)
 
 dates <- seq(as.Date("2024-07-01"), by = "day", length.out = 106)
-investment_returns_xts <- xts(investment_returns, order.by = dates)
+investment_returns_xts <- xts(ror, order.by = dates)
 
 library(PerformanceAnalytics)
-
-any(is.na(investment_returns_xts))
 
 RF <- 0.04/252
 PodwójnySharpe <- round(SharpeRatio.annualized(R = investment_returns_xts, Rf = RF, 
                                         scale = 252, geometric = FALSE), digits = 3)
 
+
 MARR <- 0.04
 sortino <- round(SortinoRatio(R = investment_returns_xts, MAR = MARR), digits = 3)
 
+
 calmar <- round(CalmarRatio(R = investment_returns_xts), digits = 3)
 
+
 # Dane z wyników
-PodwójnySharpe <- c(3.015, -0.384, -0.614, -1.083)
+PodwójnySharpe <- c(1.829, -2.145, -0.087, -1.276)
 sortino <- c(0.232, -0.091, -0.1, -0.144)
 calmar <- c(-0.998, -0.925, -0.424, -0.708)
 
@@ -738,28 +728,38 @@ Wykres ten pozwala analizować **ewolucję efektywnych portfeli** i identyfikowa
 
 ## Skład portfeli z granicy efektywnej
 
+Granica efektywna przedstawia portfele oferujące najlepszy zwrot przy danym ryzyku. Przy niskim ryzyku dominują aktywa defensywne, a przy wyższym wzrasta udział aktywów agresywnych. W środkowej części granicy portfele są najbardziej zdywersyfikowane. 
+
 ```{r eval=TRUE, echo = FALSE, fig.align='center'}}
 
 library(lpSolve)
 library(fPortfolio)
+library(timeSeries)
 
-data <- investment_returns_xts[, c("Gold", "Orlen", "Fund", "Euro")]
+dates <- seq(as.Date("2024-07-01"), by = "day", length.out = 106)
+investment_returns_xts <- xts(ror, order.by = dates)
 
-class(data)
+sklad <- investment_returns_xts[, c("gold", "orlen", "fund", "eur")]
 
-data <- as.timeSeries(data)
+class(sklad)
 
-data <- covEstimator(data)
+sklad <- as.timeSeries(sklad)
+
+sklad <- covEstimator(sklad)
 
 shortSpec <- portfolioSpec()
 
 setSolver(shortSpec) <- "solveRshortExact"
 
-shortFrontier <- portfolioFrontier(data, constraints="LongOnly")
+shortFrontier <- portfolioFrontier(sklad, constraints="LongOnly")
 
 weightsPlot(shortFrontier,labels = TRUE, col = NULL)
 
 ```
+## Interpretacja wyniku
+
+Wykres przedstawia skład portfela efektywnego wzdłuż granicy efektywnej. Przy niskim ryzyku dominuje Euro, zapewniając stabilność, a przy wyższym ryzyku rośnie udział złota. W centralnym obszarze portfel jest bardziej zdywersyfikowany, co wskazuje na optymalny balans między ryzykiem a zwrotem.
+
 
 ## Podsumowanie
 
