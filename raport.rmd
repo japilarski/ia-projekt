@@ -490,20 +490,19 @@ investment_returns_xts <- xts(ror, order.by = dates)
 
 library(PerformanceAnalytics)
 
-RF <- 0.04/252
+RF <- 0.1/252
 PodwójnySharpe <- round(SharpeRatio.annualized(R = investment_returns_xts, Rf = RF, 
                                         scale = 252, geometric = FALSE), digits = 3)
 
 
-MARR <- 0.04
+MARR <- 0.1
 sortino <- round(SortinoRatio(R = investment_returns_xts, MAR = MARR), digits = 3)
 
 
 calmar <- round(CalmarRatio(R = investment_returns_xts), digits = 3)
 
-
 # Dane z wyników
-PodwójnySharpe <- c(1.829, -2.145, -0.087, -1.276)
+PodwójnySharpe <- c(1.447, -2.378, -0.333, -2.76)
 sortino <- c(0.232, -0.091, -0.1, -0.144)
 calmar <- c(-0.998, -0.925, -0.424, -0.708)
 
