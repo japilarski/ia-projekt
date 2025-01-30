@@ -1,33 +1,40 @@
 ---
-title: ""
-author: ""
+title: "Inwestycje Alternatywne Projekt"
+author: "Julia Sulka 189564, Julia Urban 202289, Basia Michalska 206744, Jakub Pilarski 184815"
 date: "`r Sys.Date()`"
-output: 
-  html_document:
+output:
+  pdf_document:
     toc: true
-    theme: paper
+    toc_depth: 2
+    number_sections: true
+    highlight: tango
 theme: paper
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+library(knitr)
 library(ggcorrplot)
 library(readxl)
-library(dplyr)
-library(ggplot2)
-library(tidyr)
-library(psych)
 library(scales)
 library(patchwork)
 library(kableExtra)
 library(grid)
 library(tidyverse)
 library(quadprog)
-library(PerformanceAnalytics)
-library(timeSeries)
+library(xts)
 library(lpSolve)
 library(fPortfolio)
-library(xts)
+library(timeSeries)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(PerformanceAnalytics)
+library(psych)
 
 # euro_pln, mci_pln, pkn_pln, xau_pln
 euro_pln <- read.csv("euro_pln.csv")[2:107, ]
@@ -40,38 +47,47 @@ pkn_pln$Data <- as.Date(pkn_pln$Data, format = "%Y-%m-%d")
 xau_pln$Data <- as.Date(xau_pln$Data, format = "%Y-%m-%d")
 ```
 
-## Wstęp
+\newpage
+
+# Wstęp
 
 Przeprowadzona analiza dotyczy portfela inwestycyjnego złożonego z 3 inwestycji alternatywnych z trzech różnych kategorii między innymi metale szlachetne, waluty, fundusze oraz akcje polskiego przedsiębuorstwa wchodzącego w skład indeksu WIG30. Wybrane aktywa do portfelu inwestycyjnego to złoto, euro, fundusz MCI oraz aktywa PKN Orlen. Do przeprowadzonej analizy wykorzystano ceny zamknięcia w interwale dziennym zaczynając od 1 lipca 2024 do 29 listopada 2024. Celem analizy jest przeprowadzenie badania portfela inwestycyjnego w oparciu o miary statystyczne, efektywnościowe oraz miary ryzyka.
 
-## Charakterystyka inwestycji
+# Charakterystyka inwestycji
 
-### **MCI Capital ASI SA** - fundusz inwestycyjny
+## MCI Capital ASI SA - fundusz inwestycyjny
 
 Jest polska Alternatywna Spółka Inwestycyjna (ASI), czyli fundusz, który oferuje inwestorom alternatywne opcje inwestycyjne, które charakteryzują się wyższym ryzykiem, ale mogą przynieść atrakcyjniejsze zwroty, które nie są dostępne w ramach tradycyjnych funduszy inwestycyjnych. Specjalizuje się w inwestycjach związanych z cyfrową transformacją gospodarki oraz innowacyjnymi modelami biznesowymi. Aktualne portfolio funduszu obejmuje 14 aktywnych inwestycji w takich obszarach jak e-commerce, fintech, SaaS, cloud gaming, rynki internetowe oraz technologie związane z zieloną transformacją i klimatem (climatech). Fundusz koncentruje się na wspieraniu firm, które wprowadzają innowacyjne rozwiązania w swoich branżach, a także na wspieraniu rozwoju infrastruktury internetowej.
 
-### **PKN ORLEN SA**
+## PKN ORLEN SA
 
 PKN ORLEN SA to polski koncern multienergetyczny, który działa w sektorze naftowym, gazowym, petrochemicznym oraz energii odnawialnej. Jest jednym z największych przedsiębiorstw w Europie Środkowo-Wschodniej, notowanym na Giełdzie Papierów Wartościowych w Warszawie.
 PKN ORLEN posiada rozwiniętą sieć stacji paliwowych w Polsce oraz w regionie Europy Środkowo-Wschodniej, oferując szeroką gamę produktów i usług, w tym programy lojalnościowe oraz rozwiązania z zakresu elektromobilności. Portfolio spółki obejmuje również zaawansowane technologie petrochemiczne oraz produkty chemiczne, które znajdują zastosowanie w wielu branżach przemysłowych.
 ORLEN jest liderem w branży energetycznej w Polsce, a jego strategiczne inwestycje przyczyniają się do zwiększenia bezpieczeństwa energetycznego kraju oraz wsparcia transformacji w kierunku gospodarki niskoemisyjnej.
 
-### **ZŁOTO**
+## Złoto
 
 Złoto to metal szlachetny o symbolu chemicznym Au i numerze atomowym 79. Jest jednym z najbardziej cenionych surowców na świecie, znanym ze swojej trwałości, odporności na korozję i wyjątkowego, żółtego koloru.
 Złoto występuje w naturze w postaci czystych bryłek (złoto rodzimne) lub w postaci związków z innymi pierwiastkami. Wykorzystywane jest głównie w jubilerstwie, ale ma także szerokie zastosowanie w elektronice, medycynie, przemyśle i finansach. Złoto jest uważane za bezpieczną inwestycję w okresach kryzysów gospodarczych.
 
+## Euro
 
-## Statystyki opisowe
+Euro (EUR) to waluta używana w 20 krajach członkowskich Unii Europejskiej, która jest jedną z najważniejszych walut rezerwowych na świecie. Jako waluta wspólna dla strefy euro, Euro jest stabilnym elementem globalnego systemu finansowego. Jego znaczenie wynika nie tylko z wielkości strefy euro, ale także z roli, jaką pełni w międzynarodowych transakcjach finansowych i handlowych. Jest uważane za stabilne medium wymiany, a jego kurs jest monitorowany przez Europejski Bank Centralny (EBC), który kontroluje podaż pieniądza w regionie oraz wpływa na jego wartość poprzez politykę monetarną. W portfelu inwestycyjnym, Euro pełni rolę elementu stabilizującego, chroniąc przed ryzykiem związanym z innymi, bardziej zmiennymi walutami. Ponadto, euro jest atrakcyjne w kontekście inwestycji zagranicznych, zapewniając ekspozycję na rozwinięte gospodarki strefy euro, takie jak Niemcy, Francja czy Holandia. W czasach globalnych zawirowań ekonomicznych, Euro może również pełnić rolę bezpiecznej przystani, podobnie jak złoto. 
+
+\newpage
+
+
+
+# Statystyki opisowe
 
 Przy wykonywaniu statystyk opisowych dla stóp zwrotu wybór między zmianą procentową a logarytmiczną stopą zwrotu zależy od celu analizy oraz właściwości danych. Oba wskaźniki mają swoje zalety i są stosowane w różnych kontekstach.
 
 Dla danych finansowych, analizowanych w tym rozdziale, zastosowane procentową stopę zwrotu, ponieważ daje ona łatwość interpretacji oraz pozwala na porównanie między różnymi aktywami. Procentowa stopa zwrotu jest wyrażana jako procentowa zmiana wartości aktywa w określonym okresie. Jest to wskaźnik, który informuje o wzroście lub spadku wartości aktywa w danym okresie. 
 
-### Wykresy cen wybranych aktywów
+## Wykresy cen wybranych aktywów
 Na poniższych wykresach zaobserować można procentowe zmiany ceny poszczególnych aktywów na przestrzeni okresu około 4 miesięcy. 
 
-```{r wykresy_cen, eval=TRUE, echo = FALSE, fig.height=8, fig.align='center'}
+```{r wykresy_cen, eval=TRUE, echo = FALSE, fig.height=6, fig.align='center'}
 w1 <- ggplot(euro_pln, aes(x = Data, y = pct_change, group = 1)) +
   geom_line() +
   ggtitle("EUR/PLN") +
@@ -113,18 +129,10 @@ grid.draw(
 
 ```
 
-### Wykresy pudełkowe
+## Wykresy pudełkowe
 Poniższe wykresy pudełkowe przedstawiają rozkład zmiennych, ukazując ich centralną tendencję, rozproszenie oraz obecność wartości odstających. Na wykresie widać kilka kluczowych elementów opisanych poniżej. Dla łatwiejszej interpretacji wykresy zostały jednolicie wyskalowane aby ułatwić porównanie między aktywami.
 
-1. Pudełko, które reprezentuje zakres między 25. a 75. percentylem (Q1 i Q3), obrazując zakres interkwartylowy. Wykres ten pokazuje, w jakim przedziale znajduje się połowa danych, wskazując na stopień koncentracji wartości wokół mediany. Szczególnie w przypadku cen euro, pudełko jest wąskie, co sugeruje mniejsze rozproszenie cen w analizowanym okresie.
-2. Linia wewnątrz pudełka wskazuje środek rozkładu, dzieląc dane na dwie równe części. Położenie mediany względem pudełka informuje o symetrii rozkładu danych. W analizowanych danych mediana jest zazwyczaj blisko środka pudełka, co sugeruje symetryczny rozkład. Jedynym zauważalnym wyjątkiem jest PKN, gdzie mediana jest przesunięta w stronę niższych wartości, co sugeruje asymetrię w kierunku spadków.
-3. Wąsy, które wychodzą z pudełka, pokazują zakres danych, znajdujących się w obrębie 1.5-krotności zakresu interkwartylowego. Wąsy wskazują na rozpiętość danych, ignorując wartości odstające. Szczególnie stabilną inwestycją jest euro, gdzie wąsy są krótkie, co sugeruje mniejsze odchylenie od mediany. Najmniej stabilną inwestycją wydaje się być PKN, gdzie wąsy są długie, co wskazuje na duże rozproszenie cen.
-4. Wartości odstające, które są reprezentowane jako punkty znajdujące się poza zasięgiem wąsów. Te obserwacje są wyraźnie różniące się od reszty danych i wskazują na nietypowe lub ekstremalne wartości w zbiorze. Szczególnie ciekawym przypadkiem jest MCI, widzimy kilka wartości odstających, które wskazują na pojedyncze, duże zmiany cen akcji w analizowanym okresie. Skrajnym przypadkiem jest tutaj ponad 8% wzrost dzienny. 
-5. Dodatkowo, na podstawie długości wąsów i położenia mediany, można ocenić asymetrię rozkładu. Jeśli wąsy są nierównej długości, rozkład jest przesunięty, co może sugerować obecność skośności. Wykres pudełkowy pozwala również na ocenę rozproszenia danych — szerokie pudełko wskazuje na większe zróżnicowanie, natomiast wąskie pudełko sugeruje mniejsze rozproszenie. Wyróżniającą się inwestycją jest w tym przypadku złoto, którego wartość w badanym okresie stabilnie rosła (brak dodatnich wartości odstających). 
-
-Wykres pudełkowy dostarcza wizualnych informacji o rozkładzie zmiennej, umożliwiając identyfikację jej średniej, zakresu, rozproszenia oraz wartości odstających, a także ocenę symetrii lub asymetrii danych.
-
-```{r boxplot, eval=TRUE, echo = FALSE, fig.height=8, fig.align='center'}
+```{r boxplot, eval=TRUE, echo = FALSE, fig.height=6, fig.align='center'}
 p1 <- ggplot(euro_pln, aes(x = '', y = pct_change)) +
   geom_boxplot() +
   coord_flip() +
@@ -153,7 +161,16 @@ p4 <- ggplot(xau_pln, aes(x = '', y = pct_change)) +
 p1 / p2 / p3 / p4
 ```
 
-### Statystyki opisowe
+Pudełko, które reprezentuje zakres między 25. a 75. percentylem (Q1 i Q3), obrazując zakres interkwartylowy. Wykres ten pokazuje, w jakim przedziale znajduje się połowa danych, wskazując na stopień koncentracji wartości wokół mediany. Szczególnie w przypadku cen euro, pudełko jest wąskie, co sugeruje mniejsze rozproszenie cen w analizowanym okresie.
+Linia wewnątrz pudełka wskazuje środek rozkładu, dzieląc dane na dwie równe części. Położenie mediany względem pudełka informuje o symetrii rozkładu danych. W analizowanych danych mediana jest zazwyczaj blisko środka pudełka, co sugeruje symetryczny rozkład. Jedynym zauważalnym wyjątkiem jest PKN, gdzie mediana jest przesunięta w stronę niższych wartości, co sugeruje asymetrię w kierunku spadków.
+Wąsy, które wychodzą z pudełka, pokazują zakres danych, znajdujących się w obrębie 1.5-krotności zakresu interkwartylowego. Wąsy wskazują na rozpiętość danych, ignorując wartości odstające. Szczególnie stabilną inwestycją jest euro, gdzie wąsy są krótkie, co sugeruje mniejsze odchylenie od mediany. Najmniej stabilną inwestycją wydaje się być PKN, gdzie wąsy są długie, co wskazuje na duże rozproszenie cen.
+Wartości odstające, które są reprezentowane jako punkty znajdujące się poza zasięgiem wąsów. Te obserwacje są wyraźnie różniące się od reszty danych i wskazują na nietypowe lub ekstremalne wartości w zbiorze. Szczególnie ciekawym przypadkiem jest MCI, widzimy kilka wartości odstających, które wskazują na pojedyncze, duże zmiany cen akcji w analizowanym okresie. Skrajnym przypadkiem jest tutaj ponad 8% wzrost dzienny. 
+Dodatkowo, na podstawie długości wąsów i położenia mediany, można ocenić asymetrię rozkładu. Jeśli wąsy są nierównej długości, rozkład jest przesunięty, co może sugerować obecność skośności. Wykres pudełkowy pozwala również na ocenę rozproszenia danych — szerokie pudełko wskazuje na większe zróżnicowanie, natomiast wąskie pudełko sugeruje mniejsze rozproszenie. Wyróżniającą się inwestycją jest w tym przypadku złoto, którego wartość w badanym okresie stabilnie rosła (brak dodatnich wartości odstających). 
+
+Wykres pudełkowy dostarcza wizualnych informacji o rozkładzie zmiennej, umożliwiając identyfikację jej średniej, zakresu, rozproszenia oraz wartości odstających, a także ocenę symetrii lub asymetrii danych.
+
+## Statystyki opisowe
+
 Tabela przedstawia statystyki opisowe dla czterech zmiennych: EUR/PLN (cena euro w złotówkach), MCI (MCI Capital ASI SA, polska Alternatywna Spółka Inwestycyjna), PKN (spółka PKN Orlen) oraz XAU/PLN (cena uncji złota w polskich złotych). Każda z tych zmiennych reprezentuje istotny składnik portfela inwestycyjnego, a ich analiza pozwala ocenić stabilność oraz zmienność poszczególnych aktywów.
 
 ```{r stat_desc, eval=TRUE, echo = FALSE}
@@ -185,7 +202,7 @@ kable(combined_stats, digits = 3)
 
 
 
-*EUR/PLN: Średnia cena euro w złotówkach wynosi -0.002, co oznacza, że średnio w badanym okresie wartość euro względem złotówki lekko malała. Odchylenie standardowe na poziomie 0.256 wskazuje na umiarkowaną zmienność tej zmiennej. Mediana wynosząca 0.002 sugeruje, że cena euro była w miarę stabilna w centralnej części rozkładu, mimo że występowały okresowe wahania. Skośność wynosząca -0.202 wskazuje na lekką asymetrię w stronę niższych wartości. Kurtoza wynosząca 0.933 sugeruje, że rozkład tej zmiennej nie jest zbyt spiczasty, co wskazuje na brak dużych ekstremalnych zmian w cenie euro.
+EUR/PLN: Średnia cena euro w złotówkach wynosi -0.002, co oznacza, że średnio w badanym okresie wartość euro względem złotówki lekko malała. Odchylenie standardowe na poziomie 0.256 wskazuje na umiarkowaną zmienność tej zmiennej. Mediana wynosząca 0.002 sugeruje, że cena euro była w miarę stabilna w centralnej części rozkładu, mimo że występowały okresowe wahania. Skośność wynosząca -0.202 wskazuje na lekką asymetrię w stronę niższych wartości. Kurtoza wynosząca 0.933 sugeruje, że rozkład tej zmiennej nie jest zbyt spiczasty, co wskazuje na brak dużych ekstremalnych zmian w cenie euro.
 
 MCI: Średnia zmiana wartości akcji MCI Capital ASI SA wynosi 0.019, co oznacza niewielki, ale dodatni trend w analizowanym okresie. Jednak odchylenie standardowe na poziomie 1.553 jest bardzo wysokie, co wskazuje na dużą zmienność tej spółki. Taka zmienność może być wynikiem specyfiki rynku alternatywnych inwestycji, które charakteryzują się większym ryzykiem. Mediana 0.000 oznacza, że w połowie okresu zmiany były neutralne. Skośność wynosząca 1.084 sugeruje, że rozkład jest przesunięty w stronę wyższych wartości, co może wskazywać na częstsze większe wzrosty niż spadki. Kurtoza na poziomie 4.842 potwierdza, że rozkład MCI ma ostry szczyt i często występują w nim duże zmiany, zarówno w górę, jak i w dół.
 
@@ -195,7 +212,7 @@ XAU/PLN: Średnia cena uncji złota wynosi 0.139, co oznacza, że w badanym okre
 
 Podsumowując, zmienność w portfelu inwestycyjnym jest różna w zależności od składnika. Aktywa takie jak MCI i PKN charakteryzują się wysoką zmiennością, co może wiązać się z większym ryzykiem, ale także większym potencjałem zysków. Z kolei EUR/PLN i XAU/PLN wydają się być bardziej stabilne, z mniejszymi wahaniami, co może sugerować niższe ryzyko związane z tymi składnikami portfela. Zmienność MCI i PKN może być szczególnie istotna dla inwestorów poszukujących bardziej dynamicznych aktywów, podczas gdy EUR/PLN i XAU/PLN mogą pełnić rolę stabilizującą portfel.
 
-## Portfel o minimalnym ryzyku
+# Portfel o minimalnym ryzyku
 
 W analizie portfela o minimalnym ryzyku wykorzystano dane dotyczące czterech aktywów: EUR/PLN, MCI, PKN oraz XAU/PLN. Celem analizy jest znalezienie takich proporcji inwestycji w poszczególne aktywa, które zapewnią najniższe ryzyko portfela mierzone jako. Dążymy tutaj do minimalizację ryzyka bez względu na stopę zwrotu. 
 
@@ -203,7 +220,8 @@ Portfel ten cechuje się bardzo ciekawą zależnością - całkowicie wyklucza 
 
 W poprzednim rozdziale wyznaczono wykresy pudełkowe dla zmiennych i inwestycja największej ilości środków w euro ma sens biorąc pod uwagę minimalną zmienność kursu tej waluty w wybranym okresie. 
 
-```{r min_risk_portfolio, eval=TRUE, echo = FALSE, fig.align='center'}
+```{r min_risk_portfolio, eval=TRUE, echo = FALSE, fig.align='center', fig.height=2 }
+
 returns <- tibble(
   EURPLN = euro_pln$log_return,
   MCI = mci_pln$log_return,
@@ -270,9 +288,33 @@ ggplot(pie_chart, aes(x = "", y = value, fill = category)) +
   )
 ```
 
-## Portfel z maksymalną efektywnością
+# Portfel z maksymalną efektywnością
 
-```{r max_eff_portfolio, eval=TRUE, echo = FALSE, fig.align='center'}
+Wagi Aktywów:
+- **Złoto - XAU/PLN (w1):** 100% (całość portfela ulokowana w EUR/PLN).
+- **PKN Orlen (w2):** 0%.
+- **MCI (w3):** 0%.
+- **EUR/PLN (w4):** 0%.
+
+Wynika z tego, że portfel całkowicie koncentruje się na jednym aktywie - **Złoto - XAU/PLN **.
+Średni zwrot portfela wynosi około **0.0013 (0.13%)**.
+Ryzyko (Odchylenie Standardowe) wynosi około **0.0099 (0.99%)**, co czyni ten portfel relatywnie niskoryzykownym.
+Wskaźnik Sharpe'a wynosi około **0.1312**, co wskazuje na umiarkowaną efektywność tego portfela w stosunku do poziomu ryzyka.
+Wybór tego portfela oznacza maksymalizację wskaźnika Sharpe'a, co może być odpowiednie dla inwestorów poszukujących równowagi pomiędzy zwrotem a ryzykiem przy minimalnym zaangażowaniu w bardziej ryzykowne aktywa.
+
+Zalety tego portfela:
+
+- **Niskie ryzyko:** Całkowita koncentracja na złocie, które w analizach historycznych cechuje się niską zmiennością.
+
+- **Prostota:** Brak dywersyfikacji oznacza brak potrzeby zarządzania wieloma aktywami.
+
+Wady Tego Portfela:
+
+- **Brak dywersyfikacji:** Portfel jest całkowicie uzależniony od wyników złota, co zwiększa ryzyko systematyczne (specyficzne dla tego rynku).
+
+- **Potencjalnie niższy zwrot:** Skoncentrowanie na jednym aktywie o niskiej zmienności może ograniczać możliwości uzyskania wyższych zysków
+
+```{r max_eff_portfolio, eval=TRUE, echo = FALSE, fig.align='center', fig.height=2}
 #importing data
 ror <- read.csv("ror.csv", sep = ";", dec = ",")
 #We choose three assets for further analysis 
@@ -336,7 +378,7 @@ results <- results[, c("description", "w1", "w2", "w3", "w4", "iportfolio", "sdp
 write.csv(results, file = "results.csv", row.names = FALSE)
 
 # Display results
-results
+# results
 # Filtering data for "Maximum efficiency portfolio"
 max_efficiency <- results[results$description == "Maximum efficiency portfolio", ]
 
@@ -375,58 +417,20 @@ ggplot(pie_chart, aes(x = "", y = value, fill = category)) +
   scale_fill_manual(
     values = fill_colors,
     labels = c("XAU/PLN - 100 %", "PKN - 0 %")  # Pokażemy także kategorię z 0% w legendzie
-  ) +
-  ggtitle("Maximum Efficiency Portfolio")
-
-
+  )
 ```
 
-## Cechy Portfela o Maksymalnej Efektywności
-
-### Wagi Aktywów
-- **Złoto - XAU/PLN (w1):** 100% (całość portfela ulokowana w EUR/PLN).
-- **PKN Orlen (w2):** 0%.
-- **MCI (w3):** 0%.
-- **EUR/PLN (w4):** 0%.
-
-Wynika z tego, że portfel całkowicie koncentruje się na jednym aktywie - **Złoto - XAU/PLN **.
-
-### Oczekiwany Zwrot
-- Średni zwrot portfela wynosi około **0.0013 (0.13%)**.
-
-### Ryzyko Portfela (Odchylenie Standardowe)
-- Ryzyko (SD) wynosi około **0.0099 (0.99%)**, co czyni ten portfel relatywnie niskoryzykownym.
-
-### Wskaźnik Sharpe'a
-- Wskaźnik Sharpe'a wynosi około **0.1312**, co wskazuje na umiarkowaną efektywność tego portfela w stosunku do poziomu ryzyka.
-
-### Opis Alokacji
-Wybór tego portfela oznacza maksymalizację wskaźnika Sharpe'a, co może być odpowiednie dla inwestorów poszukujących równowagi pomiędzy zwrotem a ryzykiem przy minimalnym zaangażowaniu w bardziej ryzykowne aktywa.
-
----
-
-### Zalety Tego Portfela
-- **Niskie ryzyko:** Całkowita koncentracja na złocie, które w analizach historycznych cechuje się niską zmiennością.
-- **Prostota:** Brak dywersyfikacji oznacza brak potrzeby zarządzania wieloma aktywami.
-
----
-
-### Wady Tego Portfela
-- **Brak dywersyfikacji:** Portfel jest całkowicie uzależniony od wyników złota, co zwiększa ryzyko systematyczne (specyficzne dla tego rynku).
-- **Potencjalnie niższy zwrot:** Skoncentrowanie na jednym aktywie o niskiej zmienności może ograniczać możliwości uzyskania wyższych zysków
-
-
-
-
-
-## Wartość współczynników korelacji dla analizowanych inwestycji 
+# Wartość współczynników korelacji dla analizowanych inwestycji 
 **Korelacja** to miara statystyczna, która pokazuje, w jakim stopniu dwie zmienne są ze sobą powiązane. Wartość korelacji wskazuje na siłę i kierunek zależności między zmiennymi:
 
 - **Korelacja dodatnia (pozytywna)**: Kiedy jedna zmienna rośnie, druga również rośnie.
 - **Korelacja ujemna (negatywna)**: Kiedy jedna zmienna rośnie, druga maleje.
 - **Brak korelacji**: Brak jakiejkolwiek zależności między zmiennymi.
 
+\newpage
+
 Wartość korelacji mieści się w zakresie od **-1 do 1**:
+
 - **1**: Perfekcyjna dodatnia korelacja — zmienne poruszają się w tej samej fazie.
 - **-1**: Perfekcyjna ujemna korelacja — zmienne poruszają się w przeciwnych kierunkach.
 - **0**: Brak korelacji — zmienne są niezależne.
@@ -442,9 +446,6 @@ returns <- tibble(
 # Obliczanie macierzy korelacji dla logarytmicznych stóp zwrotu
 cor_matrix <- cor(returns)
 
-# Wyświetlanie wyników
-print(cor_matrix)
-
 # Tworzenie ciepłej mapy korelacji
 ggcorrplot(cor_matrix, 
            method = "circle", 
@@ -455,40 +456,31 @@ ggcorrplot(cor_matrix,
 
 ```
 
-## Interpretacja korelacji
-
 1. **Korelacja między EURPLN a innymi zmiennymi:**
-   - **EURPLN ↔ MCI**: Współczynnik korelacji wynosi -0.183, co wskazuje na **słabą ujemną korelację** między tymi dwiema zmiennymi. Oznacza to, że wzrost wartości EURPLN jest lekko związany ze spadkiem wartości MCI.
-   - **EURPLN ↔ PKN**: Korelacja wynosi 0.029, co oznacza, że **brak jest istotnej korelacji** pomiędzy tymi zmiennymi.
-   - **EURPLN ↔ XAU**: Korelacja wynosi 0.270, co wskazuje na **słabą dodatnią korelację**. Wzrost wartości EURPLN jest nieznacznie powiązany z wzrostem wartości XAU.
+   - **EURPLN / MCI**: Współczynnik korelacji wynosi -0.183, co wskazuje na **słabą ujemną korelację** między tymi dwiema zmiennymi. Oznacza to, że wzrost wartości EURPLN jest lekko związany ze spadkiem wartości MCI.
+   - **EURPLN / PKN**: Korelacja wynosi 0.029, co oznacza, że **brak jest istotnej korelacji** pomiędzy tymi zmiennymi.
+   - **EURPLN / XAU**: Korelacja wynosi 0.270, co wskazuje na **słabą dodatnią korelację**. Wzrost wartości EURPLN jest nieznacznie powiązany z wzrostem wartości XAU.
 
 2. **Korelacja między MCI a innymi zmiennymi:**
-   - **MCI ↔ PKN**: Korelacja wynosi 0.038, co oznacza, że istnieje **bardzo słaba dodatnia korelacja** między tymi zmiennymi, praktycznie brak zauważalnej zależności.
-   - **MCI ↔ XAU**: Współczynnik korelacji wynosi 0.115, co sugeruje **słabą dodatnią korelację** między MCI a XAU, choć nie jest to znacząca zależność.
+   - **MCI / PKN**: Korelacja wynosi 0.038, co oznacza, że istnieje **bardzo słaba dodatnia korelacja** między tymi zmiennymi, praktycznie brak zauważalnej zależności.
+   - **MCI / XAU**: Współczynnik korelacji wynosi 0.115, co sugeruje **słabą dodatnią korelację** między MCI a XAU, choć nie jest to znacząca zależność.
 
 3. **Korelacja między PKN a XAU:**
-   - **PKN ↔ XAU**: Korelacja wynosi 0.037, co wskazuje na **bardzo słabą dodatnią korelację** pomiędzy tymi dwiema zmiennymi. Zmiany w wartości PKN mają minimalny wpływ na zmiany w wartości XAU.
+   - **PKN / XAU**: Korelacja wynosi 0.037, co wskazuje na **bardzo słabą dodatnią korelację** pomiędzy tymi dwiema zmiennymi. Zmiany w wartości PKN mają minimalny wpływ na zmiany w wartości XAU.
 
----
+4. **Najsilniejsza korelacja** to korelacja między EURPLN a XAU, która wynosi 0.270, wskazując na niewielką, ale zauważalną dodatnią zależność.
+   - Wartości korelacji między pozostałymi parami zmiennych są słabe lub praktycznie zerowe, co oznacza, że zmienne te nie wykazują silnych powiązań ze sobą.
 
-## Podsumowanie
+# Wskaźniki efektywności
 
-- **Najsilniejsza korelacja** to korelacja między EURPLN a XAU, która wynosi 0.270, wskazując na niewielką, ale zauważalną dodatnią zależność.
-- Wartości korelacji między pozostałymi parami zmiennych są słabe lub praktycznie zerowe, co oznacza, że zmienne te nie wykazują silnych powiązań ze sobą.
-
-## Wskaźniki efektywności
-
-```{r eval=TRUE, echo = FALSE, fig.align='center'}}
+```{r eval=TRUE, echo = FALSE, fig.align='center'}
 
 #importing data
 ror <- read.csv("ror.csv", sep=";", dec=",")
 
-library(xts)
 
 dates <- seq(as.Date("2024-07-01"), by = "day", length.out = 106)
 investment_returns_xts <- xts(ror, order.by = dates)
-
-library(PerformanceAnalytics)
 
 RF <- 0.1/252
 PodwójnySharpe <- round(SharpeRatio.annualized(R = investment_returns_xts, Rf = RF, 
@@ -519,15 +511,15 @@ wyniki <- data.frame(
 )
 
 # Drukowanie tabeli
-print(wyniki)
+knitr::kable(wyniki)
 
 ```
 
-## Zbiór możliwości inwestycyjnych
+# Zbiór możliwości inwestycyjnych
 
 Przedstawia wszystkie możliwości kombinacji portfela inwestycyjnego z poszczególnych ryzykownych aktywów. Na wykresie widoczna jest oś X, na której znajduje się ryzyko oraz oczekiwaną stopę zwrotu na osi Y. Postać graficzna pozwala na identyfikację optymalnych portfeli, w tym między innymi portfela o minimalnym ryzyku oraz portfela o maksymalnej efektywności. Niebieski obszar reprezentuje wszystkie możliwości kombinacji portfeli utworzonych z dostępnych aktywów ryzykownych, każdy zaznaczony punkt odpowiada innemu portfelowi. Zielony punkt wskazuje na portfel minimalnego ryzyka, o najniższym poziomie odchylenia standardowego w całym dostępnym zbiorze. Czerwona kropka przedstawia portfel o maksymalnej efektywności, który oferuje najwyższą oczekiwaną stopę zwrotu w stosunku do ryzyka. Czarne punkty na wykresie oznaczają portfele jednoelementowe, które składają się w 100% z jednego poszczególnego aktywa. Dodatkowo na wykresie znajduje się fioletowa krzywa, która reprezentuje granicę efektywną, czyli zbiór portfeli, które są optymalne i oferują najwyższą oczekiwaną stopę zwrotu dla określonego poziomu ryzyka.
 
-```{r echo=FALSE, fig.align='center'}
+```{r echo=FALSE, fig.align='center', fig.height=3.5}
 #importing data
 ror <- read.csv("ror.csv", sep=";", dec=",")
 #We choose three assets for further analysis 
@@ -585,7 +577,6 @@ write.csv(x=results, file = "results.csv", row.names=FALSE)
 
 plot(sdp, iportfolio, type= "p", col = "#98B6D5")
 xlim = c(0, 0.02)
-title(main="Opportunity set for four risky assets without SS")
 points(min.risk$sdp, min.risk$iportfolio, pch=19, col="#4FC46A", cex = 2.5)
 points(max.effectivness$sdp, max.effectivness$iportfolio, pch=16, col="#C81518", cex = 2.5)
 points(max.ip$sdp, max.ip$iportfolio, pch=19, col="yellow", cex = 1)
@@ -604,7 +595,7 @@ lines(efficient_frontier$sdp, efficient_frontier$iportfolio, col = "#A61B96", lw
 
 ```
 
-## Portfel o maksymalnym zysku z uwzględnieniem sprzedaży krótkiej
+# Portfel o maksymalnym zysku z uwzględnieniem sprzedaży krótkiej
 
 Uzyskanie portfela zapewniającego maksymalny zysk z uwzględnieniem krótkiej sprzedaży daje bardzo ciekawe efekty. Jako że Orlen w całym badanym okresie był w tendencji spadkowej i stracił na wartości akcji ponad 10 złotych, czyli około 20%. Komponując portfel bazując na krótkiej sprzedaży spółki orlen, uzyskujemy w sumie skumulowaną wartość stopy logarytmicznej na poziomie 0.21. Ryzyko tego porfela wyrażone odchyleniem standardowym wynosi 0.016. Współczynnik Sharpe'a wynosił 13.2832, co oznacza, że portfel ten był bardzo efektywny - przyniósł wysokie zyski w stosunku do ryzyka. Oczywiście takie wyniki są bardzo trudne do osiągnięcia w praktyce, ale pokazują, że krótka sprzedaż może być skuteczną strategią inwestycyjną w określonych warunkach rynkowych.
 
@@ -648,13 +639,32 @@ sharpe_ratio <- return_rate / portfolio_risk
 # cat(sum(pkn_pln$log_return))
 ```
 
+# Zmiany efektywnych portfeli w czasie
+
+**Co przedstawia wykres?** 
+Wykres przedstawia, jak **optymalne portfele inwestycyjne zmieniają się w czasie**, analizując zależność między **ryzykiem a stopą zwrotu**.
+
+**Elementy wykresu ** 
+
+- **Punkty** - Reprezentują optymalne portfele w kolejnych okresach.
+  - Kolor oznacza **moment w czasie**.
+  - **Niebieskie punkty** to wcześniejsze okresy.
+  - **Czerwone punkty** to najnowsze okresy.
+- **Oś X (Ryzyko portfela [%])** - Mierzy poziom zmienności.
+- **Oś Y (Stopa zwrotu [%])** - Oczekiwana rentowność.
+- **Niebieska linia** - Trend zmian portfeli w czasie.
+
+**Wnioski** 
+
+- Portfele o niskim ryzyku miały początkowo stosunkowo wysokie stopy zwrotu, ale trend ten zmieniał się z czasem.
+- Występują okresy **spadku efektywności portfeli**, ale także momenty poprawy.
+- Kolory pomagają zrozumieć, które momenty były bardziej korzystne.
+
+**Podsumowanie** 
+Wykres ten pozwala analizować **ewolucję efektywnych portfeli** i identyfikować okresy bardziej oraz mniej optymalne dla inwestorów.
 
 ```{r , eval=TRUE, echo = FALSE, fig.align='center'}
 # Importowanie wymaganych pakietów
-library(ggplot2)
-library(tidyr)
-library(dplyr)
-library(PerformanceAnalytics)
 
 # Wczytanie danych stóp zwrotu
 ror <- read.csv("ror.csv", sep = ";", dec = ",")
@@ -704,43 +714,20 @@ ggplot(results_df, aes(x = Risk, y = Return, color = Period)) +
 
 ```
 
-# Interpretacja wyników
-1.**Co przedstawia wykres?** 
-Wykres przedstawia, jak **optymalne portfele inwestycyjne zmieniają się w czasie**, analizując zależność między **ryzykiem a stopą zwrotu**.
+\newpage
 
-2.**Elementy wykresu ** 
-- **Punkty** 🟣🔴 → Reprezentują optymalne portfele w kolejnych okresach.
-  - Kolor oznacza **moment w czasie**.
-  - **Niebieskie punkty** to wcześniejsze okresy.
-  - **Czerwone punkty** to najnowsze okresy.
-- **Oś X (Ryzyko portfela [%])** → Mierzy poziom zmienności.
-- **Oś Y (Stopa zwrotu [%])** → Oczekiwana rentowność.
-- **Niebieska linia** → Trend zmian portfeli w czasie.
-
-3.**Wnioski** 
-- Portfele o niskim ryzyku miały początkowo stosunkowo wysokie stopy zwrotu, ale trend ten zmieniał się z czasem.
-- Występują okresy **spadku efektywności portfeli**, ale także momenty poprawy.
-- Kolory pomagają zrozumieć, które momenty były bardziej korzystne.
-
-4.**Podsumowanie** 
-Wykres ten pozwala analizować **ewolucję efektywnych portfeli** i identyfikować okresy bardziej oraz mniej optymalne dla inwestorów.
-
-## Skład portfeli z granicy efektywnej
+# Skład portfeli z granicy efektywnej
 
 Granica efektywna przedstawia portfele oferujące najlepszy zwrot przy danym ryzyku. Przy niskim ryzyku dominują aktywa defensywne, a przy wyższym wzrasta udział aktywów agresywnych. W środkowej części granicy portfele są najbardziej zdywersyfikowane. 
 
-```{r eval=TRUE, echo = FALSE, fig.align='center'}}
-
-library(lpSolve)
-library(fPortfolio)
-library(timeSeries)
+```{r eval=TRUE, echo = FALSE, fig.align='center'}
 
 dates <- seq(as.Date("2024-07-01"), by = "day", length.out = 106)
 investment_returns_xts <- xts(ror, order.by = dates)
 
 sklad <- investment_returns_xts[, c("gold", "orlen", "fund", "eur")]
 
-class(sklad)
+# class(sklad)
 
 sklad <- as.timeSeries(sklad)
 
@@ -753,23 +740,21 @@ setSolver(shortSpec) <- "solveRshortExact"
 shortFrontier <- portfolioFrontier(sklad, constraints="LongOnly")
 
 weightsPlot(shortFrontier,labels = TRUE, col = NULL)
-
 ```
-## Interpretacja wyniku
-
 Wykres przedstawia skład portfela efektywnego wzdłuż granicy efektywnej. Przy niskim ryzyku dominuje Euro, zapewniając stabilność, a przy wyższym ryzyku rośnie udział złota. W centralnym obszarze portfel jest bardziej zdywersyfikowany, co wskazuje na optymalny balans między ryzykiem a zwrotem.
 
+\newpage
 
-## Podsumowanie
+# Podsumowanie
 
 Analiza dotycząca portfela inwestycyjnego złożonego z czterech aktywów, w tym: złota, euro, funduszu MCI i akcji PKN Orlen, zbadanych w okresie od lipca do listopada 2024 roku pozwoliła ocenić efektywność portfela oraz ryzyko wiążące się z poszczególnych składników. Fundusz MCI i akcje PKN charakteryzują się wysoką zmiennością, co wpływa na podwyższone ryzyko, podczas gdy euro i złoto są bardziej stabilne, co sugeruje niższe ryzyko. W ramach analizy portfela o minimalnym ryzyku najwięcej środków zainwestowano w euro, co zapewniło niski poziom zmienności. Z kolei portfel o maksymalnej efektywności skoncentrował się na złocie, oferując umiarkowaną efektywność w stosunku do ryzyka. Analiza korelacji między aktywami wykazała głównie słabe zależności, a interesującym przypadkiem była strategia krótkiej sprzedaży akcji PKN, która przy wysokim współczynniku Sharpe'a wykazała dużą efektywność w analizowanym okresie. Ważne jest zrozumienie wzajemnych zależności między aktywami oraz świadome podejmowanie decyzji inwestycyjnych, aby uzyskać najlepszy wynik przy optymalnym poziomie ryzyka.
 
 
+\newpage
 
 
+# Bibliografia
 
-## Bibliografia
-
-1.  Urząd Komisji Nadzoru Finansowego. “KNF.” *Knf.gov.pl*, 2024, [www.knf.gov.pl/dla_rynku/procesy_licencyjne/kapitalowy/zarzadzajacy_alternatywnymi_spolkami_inwestycyjnymi_ZASI/pytania_i_odpowiedzi. Accessed 8 Jan. 2025](http://www.knf.gov.pl/dla_rynku/procesy_licencyjne/kapitalowy/zarzadzajacy_alternatywnymi_spolkami_inwestycyjnymi_ZASI/pytania_i_odpowiedzi.%20Accessed%208%20Jan.%202025).
-2.  “Opportunity Set Definition and Tutorial for Investment Modeling \| FactorPad.” *Factorpad.com*, factorpad.com/fin/glossary/opportunity-set.html.
-3.  “MCI - MCI Capital ASI SA - Stooq.” *Stooq*, 2025, stooq.pl/q/p/?s=mci&fbclid=IwZXh0bgNhZW0CMTEAAR1EYBwR60o75nUTSQ3b-95iZ-nU2zflpBnvTctKiazgGsZhliUjWwLx0n0_aem_Nennkxm8HU8jLqFlHg0vJA. Accessed 8 Jan. 2025.
+1.  Stooq - wartości dzienne dla MCI, PKN, XAU i EUR/PLN, 8.01.2025 [stooq.pl](http://stooq.pl).
+2.  Urząd Komisji Nadzoru Finansowego, KNF, 8.01.2025 [knf.gov.pl](http://www.knf.gov.pl/dla_rynku/procesy_licencyjne/kapitalowy/zarzadzajacy_alternatywnymi_spolkami_inwestycyjnymi_ZASI/pytania_i_odpowiedzi.%20Accessed%208%20Jan.%202025).
+3.  "Opportunity Set Definition and Tutorial for Investment Modeling", 8.01.2025 [factorpad.com](http://factorpad.com/fin/glossary/opportunity-set.html), 
